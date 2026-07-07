@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "E-Learning Platform"
+version = "1.0.0"
+id = "artifacts/elearn"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 26166
+
+[services.development]
+run = "pnpm run dev"
+
+[services.production]
+build = [ "pnpm", "run", "build" ]
+publicDir = "artifacts/elearn/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26166"
+BASE_PATH = "/"
