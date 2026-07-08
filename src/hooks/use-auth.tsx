@@ -35,7 +35,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logoutMutation.mutate(undefined, {
       onSettled: () => {
         clearAuthToken();
-        window.location.href = "/login";
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
       },
     });
   };

@@ -110,16 +110,27 @@ export function setAuthTokenGetter(getter: () => string | null): void {
   authTokenGetter = getter;
 }
 
+function safeStorage() {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
 export function getAuthToken(): string | null {
-  return localStorage.getItem("elearn_token");
+  const storage = safeStorage();
+  return storage?.getItem("elearn_token") ?? null;
 }
 
 export function setAuthToken(token: string): void {
-  localStorage.setItem("elearn_token", token);
+  const storage = safeStorage();
+  storage?.setItem("elearn_token", token);
 }
 
 export function clearAuthToken(): void {
-  localStorage.removeItem("elearn_token");
+  const storage = safeStorage();
+  storage?.removeItem("elearn_token");
 }
 
 const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? "").trim();
