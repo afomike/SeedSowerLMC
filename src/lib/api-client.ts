@@ -134,7 +134,8 @@ export function clearAuthToken(): void {
 }
 
 const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? "").trim();
-setBaseUrl(apiBaseUrl || null);
+const fallbackApiBaseUrl = "https://seedsower-api.onrender.com";
+setBaseUrl(apiBaseUrl || fallbackApiBaseUrl);
 setAuthTokenGetter(getAuthToken);
 
 function buildQueryOptions<T>(defaultKey: unknown[], options?: { query?: Record<string, any> }, queryFn?: () => Promise<T>) {
