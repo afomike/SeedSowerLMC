@@ -78,9 +78,10 @@ async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   Object.entries(authHeaders).forEach(([key, value]) => headers.set(key, value));
 
   const response = await fetch(buildUrl(path), {
-    ...init,
-    headers,
-  });
+  ...init,
+  headers,
+  credentials: "include",
+});
 
   const text = await response.text();
   let payload: any = null;
