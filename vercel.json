@@ -14,5 +14,13 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ]
+  ],
+  "github": {
+    "silent": true
+  },
+  "build": {
+    "env": {
+      "PNPM_VERSION": "11.10.0"
+    }
+  }
 }
