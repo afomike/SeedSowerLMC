@@ -68,7 +68,7 @@ export default defineConfig({
     host: "0.0.0.0",
     allowedHosts: true,
     proxy: {
-      "/api": "http://localhost:3000",
+      "/api": "https://backendfortskmlm-1.onrender.com",
     },
     fs: {
       strict: true,
