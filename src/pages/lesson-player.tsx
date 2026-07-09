@@ -108,7 +108,7 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
   const handleComplete = () => {
     if (isCompleted || completeMutation.isPending) return;
 
-    completeMutation.mutate({ data: { lessonId } }, {
+    completeMutation.mutate({ id: lessonId, data: { lessonId } }, {
       onSuccess: () => {
         toast({
           title: "Lesson Completed!",
@@ -169,7 +169,7 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
     return null; // Will redirect via useEffect
   }
 
-  const lessonParts = lesson.parts.length > 0
+  const lessonParts = lesson.parts && lesson.parts.length > 0
     ? lesson.parts
     : [{
         title: lesson.title,
