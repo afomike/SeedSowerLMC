@@ -318,6 +318,10 @@ export function useListUsers(options?: { query?: Record<string, any> }) {
   });
 }
 
+
+
+console.log(getListUsersQueryKey(), undefined, () => apiRequest);
+
 export function useUpdateUserStatus() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, any> }) =>
