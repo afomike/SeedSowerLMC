@@ -79,13 +79,14 @@ function getAudioPlatformEmbed(url: string): string | null {
     return `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&auto_play=false&color=%23ff5500`;
   }
 
-  // YouTube links used as an audio source (e.g. a podcast uploaded to YouTube)
+  const drive = url.match(/drive\.google\.com\/file\/d\/([\w-]+)/);
+  if (drive) return `https://drive.google.com/file/d/${drive[1]}/preview`;
+
   const ytEmbed = getVideoPlatformEmbed(url);
   if (ytEmbed) return ytEmbed;
 
   return null;
 }
-
 /** Returns a preview/embed URL for common document-hosting links (Google Drive, Dropbox). */
 function getDocPlatformEmbed(url: string): string | null {
   const drive = url.match(/drive\.google\.com\/file\/d\/([\w-]+)/);
