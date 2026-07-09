@@ -135,7 +135,7 @@ export function clearAuthToken(): void {
 }
 
 const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? "").trim();
-const fallbackApiBaseUrl = "https://seedsower-api.onrender.com";
+const fallbackApiBaseUrl = "http://localhost:3000";
 setBaseUrl(apiBaseUrl || fallbackApiBaseUrl);
 setAuthTokenGetter(getAuthToken);
 

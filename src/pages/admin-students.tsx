@@ -42,7 +42,7 @@ export default function AdminStudents() {
   };
 
   // Filter only students to show in list
-  const students = users?.filter(u => u.role === "student") || [];
+  const students = Array.isArray(users) ? users.filter((u: any) => u.role === "student") : [];
 
   return (
     <AdminLayout>

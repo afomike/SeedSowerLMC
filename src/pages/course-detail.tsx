@@ -86,9 +86,11 @@ export default function CourseDetail({ params }: { params: { id: string } }) {
     );
   }
 
-  const completedLessons = course.lessons.filter(l => l.isCompleted).length;
-  const progressPercent = course.lessonCount > 0 ? (completedLessons / course.lessonCount) * 100 : 0;
-  const isFullyCompleted = completedLessons === course.lessonCount && course.lessonCount > 0;
+  const lessons = course.lessons ?? [];
+  const completedLessons = lessons.filter(l => l.isCompleted).length;
+  const lessonCount = course.lessonCount ?? lessons.length;
+  const progressPercent = lessonCount > 0 ? (completedLessons / lessonCount) * 100 : 0;
+  const isFullyCompleted = lessonCount > 0 && completedLessons === lessonCount;
 
   return (
     <StudentLayout>

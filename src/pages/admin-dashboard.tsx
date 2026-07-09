@@ -5,9 +5,28 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BookOpen, Users, CheckCircle, TrendingUp, UserPlus, Clock } from "lucide-react";
 import { Link } from "wouter";
 
+interface AdminStats {
+  totalStudents: number;
+  activeStudents: number;
+  totalCourses: number;
+  totalLessons: number;
+  overallCompletionRate: number;
+  recentEnrollments: number;
+}
+
 export default function AdminDashboard() {
-  const { data: stats, isLoading: isStatsLoading } = useGetAdminStats();
-  const { data: popularCourses, isLoading: isPopularLoading } = useGetPopularCourses();
+  const { data: statsData, isLoading: isStatsLoading } = useGetAdminStats();
+  const { data: popularCoursesData, isLoading: isPopularLoading } = useGetPopularCourses();
+  const stats = statsData as AdminStats | undefined;
+  const popularCourses = popularCoursesData as
+    | {
+        id: string;
+        title: string;
+        enrollmentCount: number;
+        completionRate: number;
+        thumbnailUrl?: string;
+      }[]
+    | undefined;
 
   const isLoading = isStatsLoading || isPopularLoading;
 

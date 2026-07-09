@@ -6,17 +6,27 @@ import { Award, Download, Printer, ShieldCheck } from "lucide-react";
 import { Link } from "wouter";
 import { useRef } from "react";
 
+type CertificatePayload = {
+  studentName: string;
+  courseTitle: string;
+  completedAt: string;
+  certificateNumber: string;
+};
+
 export default function Certificate({ params }: { params: { courseId: string } }) {
   const { courseId } = params;
   const printRef = useRef<HTMLDivElement>(null);
 
-  const { data: certificate, isLoading, isError } = useGetCertificate(courseId, {
+  const certificateQuery = useGetCertificate(courseId, {
     query: {
       enabled: !!courseId,
       queryKey: getGetCertificateQueryKey(courseId),
       retry: false
     }
   });
+
+  const certificate = certificateQuery.data as CertificatePayload | undefined;
+  const { isLoading, isError } = certificateQuery;
 
   const handlePrint = () => {
     window.print();

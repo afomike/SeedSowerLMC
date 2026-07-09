@@ -69,9 +69,9 @@ export default function CourseCatalog() {
                 key={course.id}
                 id={course.id}
                 title={course.title}
-                description={course.description}
+                description={course.description ?? ""}
                 thumbnailUrl={course.thumbnailUrl}
-                lessonCount={course.lessonCount}
+                lessonCount={course.lessonCount ?? 0}
                 enrollmentCount={course.enrollmentCount}
                 href={`/courses/${course.id}`}
               />

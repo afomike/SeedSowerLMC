@@ -319,7 +319,7 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
     });
   };
 
-  const getContentTypeIcon = (type: string) => {
+  const getContentTypeIcon = (type?: string) => {
     switch (type) {
       case "video": return <Video className="h-4 w-4" />;
       case "audio": return <Headphones className="h-4 w-4" />;
@@ -457,8 +457,8 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
                         <span className="flex items-center gap-1">
                           {getContentTypeIcon(lesson.contentType)} {lesson.contentType}
                         </span>
-                        {lesson.parts.length > 0 && (
-                          <span>{lesson.parts.length} parts</span>
+                        {(lesson.parts ?? []).length > 0 && (
+                          <span>{lesson.parts?.length} parts</span>
                         )}
                         {lesson.duration && (
                           <span className="flex items-center gap-1">
@@ -476,9 +476,9 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
                       </Button>
                     </div>
                   </div>
-                  {lesson.parts.length > 0 && (
+                  {(lesson.parts ?? []).length > 0 && (
                     <div className="mt-3 ml-14 border-l pl-4 space-y-2">
-                      {lesson.parts.map((part, partIndex) => (
+                      {(lesson.parts ?? []).map((part, partIndex) => (
                         <div key={`${lesson.id}-${partIndex}`} className="text-sm">
                           <span className="font-medium text-foreground">
                             {partIndex + 1}. {part.title}
@@ -509,7 +509,7 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
 
         {/* Lesson Dialog */}
         <Dialog open={isLessonModalOpen} onOpenChange={setIsLessonModalOpen}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingLessonId ? "Edit Lesson" : "Add New Lesson"}</DialogTitle>
             </DialogHeader>

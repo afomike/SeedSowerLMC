@@ -15,7 +15,7 @@ import {
 import { StudentLayout } from "@/components/layout/student-layout";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronLeft, ChevronRight, CheckCircle, ClipboardList, FileText, Play, ArrowLeft, Lock } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle, ClipboardList, FileText, Play, ArrowLeft, Lock, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { QuizModal } from "@/components/quiz-modal";
@@ -38,6 +38,128 @@ async function fetchBestAttempt(lessonId: string) {
   });
   if (!res.ok) return { hasPassed: false, bestScore: null };
   return res.json();
+}
+
+// ---------------------------------------------------------------------------
+// External-link / embed detection helpers
+// ---------------------------------------------------------------------------
+
+const VIDEO_FILE_EXTS = [".mp4", ".webm", ".mov", ".ogg", ".m3u8", ".mkv"];
+const AUDIO_FILE_EXTS = [".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac"];
+const PDF_FILE_EXTS = [".pdf"];
+
+function hasExtension(url: string, exts: string[]): boolean {
+  try {
+    const path = new URL(url).pathname.toLowerCase();
+    return exts.some((ext) => path.endsWith(ext));
+  } catch {
+    return false;
+  }
+}
+
+/** Returns a YouTube/Vimeo embed URL if the link matches, otherwise null. */
+function getVideoPlatformEmbed(url: string): string | null {
+  const yt = url.match(
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([\w-]{6,})/
+  );
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+
+  const vimeo = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
+
+  return null;
+}
+
+/** Returns a Spotify/SoundCloud embed URL if the link matches, otherwise null. */
+function getAudioPlatformEmbed(url: string): string | null {
+  const spotify = url.match(/open\.spotify\.com\/(track|episode|album|playlist)\/([\w]+)/);
+  if (spotify) return `https://open.spotify.com/embed/${spotify[1]}/${spotify[2]}`;
+
+  if (/soundcloud\.com\//.test(url)) {
+    return `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&auto_play=false&color=%23ff5500`;
+  }
+
+  // YouTube links used as an audio source (e.g. a podcast uploaded to YouTube)
+  const ytEmbed = getVideoPlatformEmbed(url);
+  if (ytEmbed) return ytEmbed;
+
+  return null;
+}
+
+/** Returns a preview/embed URL for common document-hosting links (Google Drive, Dropbox). */
+function getDocPlatformEmbed(url: string): string | null {
+  const drive = url.match(/drive\.google\.com\/file\/d\/([\w-]+)/);
+  if (drive) return `https://drive.google.com/file/d/${drive[1]}/preview`;
+
+  if (/dropbox\.com\//.test(url)) {
+    const raw = url.replace(/\?dl=0$/, "?raw=1").replace(/\?dl=1$/, "?raw=1");
+    return `https://docs.google.com/viewer?url=${encodeURIComponent(raw)}&embedded=true`;
+  }
+
+  return null;
+}
+
+type MediaResolution =
+  | { kind: "direct"; url: string }
+  | { kind: "embed"; url: string }
+  | { kind: "unknown"; url: string };
+
+function resolveVideo(url: string): MediaResolution {
+  if (hasExtension(url, VIDEO_FILE_EXTS)) return { kind: "direct", url };
+  const embed = getVideoPlatformEmbed(url);
+  if (embed) return { kind: "embed", url: embed };
+  return { kind: "unknown", url };
+}
+
+function resolveAudio(url: string): MediaResolution {
+  if (hasExtension(url, AUDIO_FILE_EXTS)) return { kind: "direct", url };
+  const embed = getAudioPlatformEmbed(url);
+  if (embed) return { kind: "embed", url: embed };
+  return { kind: "unknown", url };
+}
+
+function resolveDoc(url: string): MediaResolution {
+  if (hasExtension(url, PDF_FILE_EXTS)) return { kind: "direct", url };
+  const embed = getDocPlatformEmbed(url);
+  if (embed) return { kind: "embed", url: embed };
+  // Last resort: try Google Docs Viewer on the raw url — works for many
+  // publicly accessible pdf/doc links that don't match a known platform.
+  return { kind: "embed", url: `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true` };
+}
+
+// A small manual "mark as finished" control shown under embeds where we
+// can't reliably detect completion (cross-origin iframes don't expose
+// ended/progress events the way native <video>/<audio> tags do).
+function ManualFinishControl({
+  label,
+  originalUrl,
+  onFinish,
+  finished,
+}: {
+  label: string;
+  originalUrl: string;
+  onFinish: () => void;
+  finished: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 px-4 py-3 bg-card border-t">
+      <a
+        href={originalUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+      >
+        <ExternalLink className="h-3.5 w-3.5" />
+        Open original link
+      </a>
+      {!finished && (
+        <Button size="sm" onClick={onFinish} className="gap-2 shadow-sm">
+          <CheckCircle className="h-4 w-4" />
+          {label}
+        </Button>
+      )}
+    </div>
+  );
 }
 
 export default function LessonPlayer({ params }: { params: { id: string, lessonId: string } }) {
@@ -108,7 +230,7 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
   const handleComplete = () => {
     if (isCompleted || completeMutation.isPending) return;
 
-    completeMutation.mutate({ id: lessonId, data: { lessonId } }, {
+    completeMutation.mutate({ data: { lessonId } }, {
       onSuccess: () => {
         toast({
           title: "Lesson Completed!",
@@ -169,7 +291,7 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
     return null; // Will redirect via useEffect
   }
 
-  const lessonParts = lesson.parts && lesson.parts.length > 0
+  const lessonParts = (lesson.parts?.length ?? 0) > 0
     ? lesson.parts
     : [{
         title: lesson.title,
@@ -179,6 +301,7 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
       }];
   const activePart = lessonParts[Math.min(activePartIndex, lessonParts.length - 1)]!;
   const allPartsFinished = completedPartIndexes.size >= lessonParts.length;
+  const activePartFinished = completedPartIndexes.has(activePartIndex);
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
@@ -241,74 +364,137 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
         <div className="max-w-5xl mx-auto py-6 md:py-8 px-4 md:px-8">
           {/* Player Container */}
           <div className="bg-card border shadow-sm rounded-2xl overflow-hidden mb-8 animate-in fade-in zoom-in-95 duration-500">
-            {activePart.contentType === "video" && (
-              <div className="aspect-video w-full bg-black relative group">
-                <video
-                  key={`${lesson.id}-${activePartIndex}-${activePart.fileUrl}`}
-                  ref={videoRef}
-                  src={activePart.fileUrl}
-                  controls
-                  controlsList="nodownload"
-                  className="w-full h-full object-contain"
-                  onEnded={handleVideoEnded}
-                  poster={course.thumbnailUrl || undefined}
-                >
-                  Your browser does not support the video tag.
-                </video>
-              </div>
-            )}
-
-            {activePart.contentType === "audio" && (
-              <div className="p-12 md:p-24 flex flex-col items-center justify-center bg-slate-900 text-white">
-                <div className="h-24 w-24 rounded-full bg-primary/20 flex items-center justify-center mb-8 pulse-ring">
-                  <Play className="h-10 w-10 text-primary ml-1" />
-                </div>
-                <h3 className="text-xl font-medium mb-8 text-center">{activePart.title}</h3>
-                <audio
-                  key={`${lesson.id}-${activePartIndex}-${activePart.fileUrl}`}
-                  ref={audioRef}
-                  src={activePart.fileUrl}
-                  controls
-                  controlsList="nodownload"
-                  className="w-full max-w-md"
-                  onEnded={() => handlePartFinished()}
-                >
-                  Your browser does not support the audio element.
-                </audio>
-              </div>
-            )}
-
-            {activePart.contentType === "pdf" && (
-              <div className="h-[70vh] min-h-[600px] w-full bg-muted flex flex-col">
-                <iframe 
-                  src={`${activePart.fileUrl}#toolbar=0`} 
-                  className="flex-1 w-full"
-                  title={activePart.title}
-                />
-                {!completedPartIndexes.has(activePartIndex) && (
-                  <div className="p-4 bg-card border-t flex justify-end">
-                    {hasQuiz ? (
-                      <Button
-                        onClick={() => handlePartFinished()}
-                        className="gap-2 shadow-sm"
+            {activePart.contentType === "video" && (() => {
+              const resolved = resolveVideo(activePart.fileUrl);
+              return (
+                <div className="flex flex-col">
+                  <div className="aspect-video w-full bg-black relative group">
+                    {resolved.kind === "direct" ? (
+                      <video
+                        key={`${lesson.id}-${activePartIndex}-${activePart.fileUrl}`}
+                        ref={videoRef}
+                        src={resolved.url}
+                        controls
+                        controlsList="nodownload"
+                        className="w-full h-full object-contain"
+                        onEnded={handleVideoEnded}
+                        poster={course.thumbnailUrl || undefined}
                       >
-                        <ClipboardList className="h-4 w-4" />
-                        I've Read This — Take Quiz
-                      </Button>
+                        Your browser does not support the video tag.
+                      </video>
                     ) : (
-                      <Button 
-                        onClick={() => handlePartFinished()} 
-                        disabled={completeMutation.isPending}
-                        className="gap-2 shadow-sm"
-                      >
-                        <CheckCircle className="h-4 w-4" />
-                        Mark as Read
-                      </Button>
+                      <iframe
+                        key={`${lesson.id}-${activePartIndex}-${resolved.url}`}
+                        src={resolved.url}
+                        className="w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                        title={activePart.title}
+                      />
                     )}
                   </div>
-                )}
-              </div>
-            )}
+                  {/* Embeds (YouTube/Vimeo/unknown) can't reliably signal "ended" across
+                      origins, so give the learner a manual way to mark this part finished. */}
+                  {resolved.kind !== "direct" && !activePartFinished && (
+                    <ManualFinishControl
+                      label={hasQuiz ? "I've watched this — continue" : "Mark as watched"}
+                      originalUrl={activePart.fileUrl}
+                      finished={activePartFinished}
+                      onFinish={() => handlePartFinished()}
+                    />
+                  )}
+                </div>
+              );
+            })()}
+
+            {activePart.contentType === "audio" && (() => {
+              const resolved = resolveAudio(activePart.fileUrl);
+              return (
+                <div className="flex flex-col">
+                  <div className="p-12 md:p-24 flex flex-col items-center justify-center bg-slate-900 text-white">
+                    <div className="h-24 w-24 rounded-full bg-primary/20 flex items-center justify-center mb-8 pulse-ring">
+                      <Play className="h-10 w-10 text-primary ml-1" />
+                    </div>
+                    <h3 className="text-xl font-medium mb-8 text-center">{activePart.title}</h3>
+                    {resolved.kind === "direct" ? (
+                      <audio
+                        key={`${lesson.id}-${activePartIndex}-${activePart.fileUrl}`}
+                        ref={audioRef}
+                        src={resolved.url}
+                        controls
+                        controlsList="nodownload"
+                        className="w-full max-w-md"
+                        onEnded={() => handlePartFinished()}
+                      >
+                        Your browser does not support the audio element.
+                      </audio>
+                    ) : (
+                      <iframe
+                        key={`${lesson.id}-${activePartIndex}-${resolved.url}`}
+                        src={resolved.url}
+                        className="w-full max-w-md rounded-lg"
+                        height={resolved.url.includes("spotify") ? 152 : 166}
+                        allow="autoplay; clipboard-write; encrypted-media"
+                        title={activePart.title}
+                      />
+                    )}
+                  </div>
+                  {resolved.kind !== "direct" && !activePartFinished && (
+                    <ManualFinishControl
+                      label={hasQuiz ? "I've listened — continue" : "Mark as listened"}
+                      originalUrl={activePart.fileUrl}
+                      finished={activePartFinished}
+                      onFinish={() => handlePartFinished()}
+                    />
+                  )}
+                </div>
+              );
+            })()}
+
+            {activePart.contentType === "pdf" && (() => {
+              const resolved = resolveDoc(activePart.fileUrl);
+              const iframeSrc = resolved.kind === "direct" ? `${resolved.url}#toolbar=0` : resolved.url;
+              return (
+                <div className="h-[70vh] min-h-[600px] w-full bg-muted flex flex-col">
+                  <iframe 
+                    src={iframeSrc} 
+                    className="flex-1 w-full"
+                    title={activePart.title}
+                  />
+                  {!activePartFinished && (
+                    <div className="p-4 bg-card border-t flex items-center justify-between gap-3">
+                      <a
+                        href={activePart.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        Open original link
+                      </a>
+                      {hasQuiz ? (
+                        <Button
+                          onClick={() => handlePartFinished()}
+                          className="gap-2 shadow-sm"
+                        >
+                          <ClipboardList className="h-4 w-4" />
+                          I've Read This — Take Quiz
+                        </Button>
+                      ) : (
+                        <Button 
+                          onClick={() => handlePartFinished()} 
+                          disabled={completeMutation.isPending}
+                          className="gap-2 shadow-sm"
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                          Mark as Read
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Lesson Metadata & Navigation */}
