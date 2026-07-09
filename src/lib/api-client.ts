@@ -135,7 +135,7 @@ export function clearAuthToken(): void {
 }
 
 const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? "").trim();
-const fallbackApiBaseUrl = "http://localhost:3000";
+const fallbackApiBaseUrl = "https://backendfortskmlm-1.onrender.com";
 setBaseUrl(apiBaseUrl || fallbackApiBaseUrl);
 setAuthTokenGetter(getAuthToken);
 
@@ -185,7 +185,7 @@ export function useUpdateProfile() {
   return useMutation({
     mutationFn: ({ data }: { data: Record<string, any> }) =>
       apiRequest<User>("/api/auth/me", {
-        method: "PUT",
+        method: "PATCH",
         body: JSON.stringify(data),
       }),
   });
@@ -259,7 +259,7 @@ export function useUpdateCourse() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, any> }) =>
       apiRequest<Course>(`/api/courses/${id}`, {
-        method: "PUT",
+        method: "PATCH",
         body: JSON.stringify(data),
       }),
   });
@@ -279,7 +279,7 @@ export function useUpdateLesson() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, any> }) =>
       apiRequest<Lesson>(`/api/lessons/${id}`, {
-        method: "PUT",
+        method: "PATCH",
         body: JSON.stringify(data),
       }),
   });
