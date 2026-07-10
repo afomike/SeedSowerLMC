@@ -131,6 +131,18 @@ function resolveDoc(url: string): MediaResolution {
 // A small manual "mark as finished" control shown under embeds where we
 // can't reliably detect completion (cross-origin iframes don't expose
 // ended/progress events the way native <video>/<audio> tags do).
+function openOriginalLink(url: string) {
+  if (typeof window === "undefined") {
+    window.open(url, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  const shouldOpen = window.confirm("This will open the original resource in a new tab. Continue?");
+  if (shouldOpen) {
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+}
+
 function ManualFinishControl({
   label,
   originalUrl,
@@ -148,6 +160,10 @@ function ManualFinishControl({
         href={originalUrl}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={(event) => {
+          event.preventDefault();
+          openOriginalLink(originalUrl);
+        }}
         className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
       >
         <ExternalLink className="h-3.5 w-3.5" />
@@ -468,6 +484,10 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
                         href={activePart.fileUrl}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          openOriginalLink(activePart.fileUrl);
+                        }}
                         className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
                       >
                         <ExternalLink className="h-3.5 w-3.5" />

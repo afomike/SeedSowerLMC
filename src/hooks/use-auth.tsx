@@ -1,7 +1,9 @@
-import { createContext, useContext, ReactNode } from "react";
+import { createContext, useContext, ReactNode, useEffect } from "react";
 import { getGetMeQueryKey, useGetMe, useLogout, User } from "@/lib/api-client";
 import { clearAuthToken, setAuthToken, getAuthToken } from "@/lib/api-client";
 import { useLocation } from "wouter";
+
+const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000;
 
 interface AuthContextType {
   user: User | null;
@@ -26,12 +28,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logoutMutation = useLogout();
 
-  const handleLogin = (newToken: string) => {
-    setAuthToken(newToken);
-    refetch();
-  };
+  const handleLogout = (reason: "manual" | "inactivity" = "manual") => {
+    const message =
+      reason === "inactivity"
+        ? "You have been inactive for 15 minutes. Would you like to sign out now?"
+        : "You are about to sign out. Continue?";
 
-  const handleLogout = () => {
+    if (typeof window !== "undefined" && !window.confirm(message)) {
+      return false;
+    }
+
     logoutMutation.mutate(undefined, {
       onSettled: () => {
         clearAuthToken();
@@ -40,13 +46,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       },
     });
+
+    return true;
+  };
+
+  useEffect(() => {
+    if (!token) return;
+
+    let timerId: number | undefined;
+
+    const resetTimer = () => {
+      if (timerId) {
+        window.clearTimeout(timerId);
+      }
+
+      timerId = window.setTimeout(() => {
+        handleLogout("inactivity");
+      }, INACTIVITY_TIMEOUT_MS);
+    };
+
+    const events = ["mousemove", "mousedown", "keydown", "scroll", "touchstart", "click"];
+
+    events.forEach((eventName) => window.addEventListener(eventName, resetTimer, { passive: true }));
+    resetTimer();
+
+    return () => {
+      events.forEach((eventName) => window.removeEventListener(eventName, resetTimer));
+      if (timerId) {
+        window.clearTimeout(timerId);
+      }
+    };
+  }, [token]);
+
+  const handleLogin = (newToken: string) => {
+    setAuthToken(newToken);
+    refetch();
   };
 
   const value = {
     user: user || null,
     isLoading: !!token && isMeLoading,
     login: handleLogin,
-    logout: handleLogout,
+    logout: () => handleLogout("manual"),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
