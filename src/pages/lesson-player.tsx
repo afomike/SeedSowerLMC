@@ -245,23 +245,22 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
   }, [courseLesson?.isLocked, courseId, setLocation, toast]);
 
   const handleComplete = () => {
-    if (isCompleted || completeMutation.isPending) return;
+  if (isCompleted || completeMutation.isPending) return;
 
-    completeMutation.mutate({ data: { lessonId } }, {
-      onSuccess: () => {
-        toast({
-          title: "Lesson Completed!",
-          description: "Great job. Keep up the momentum.",
-        });
-        queryClient.invalidateQueries({ queryKey: getGetCourseQueryKey(courseId) });
-        queryClient.invalidateQueries({ queryKey: getListLessonsQueryKey(courseId) });
-        queryClient.invalidateQueries({ queryKey: getGetCourseProgressQueryKey(courseId) });
-        queryClient.invalidateQueries({ queryKey: getGetStudentStatsQueryKey() });
-        queryClient.invalidateQueries({ queryKey: getGetMyProgressQueryKey() });
-      }
-    });
-  };
-
+  completeMutation.mutate({ id: lessonId }, {
+    onSuccess: () => {
+      toast({
+        title: "Lesson Completed!",
+        description: "Great job. Keep up the momentum.",
+      });
+      queryClient.invalidateQueries({ queryKey: getGetCourseQueryKey(courseId) });
+      queryClient.invalidateQueries({ queryKey: getListLessonsQueryKey(courseId) });
+      queryClient.invalidateQueries({ queryKey: getGetCourseProgressQueryKey(courseId) });
+      queryClient.invalidateQueries({ queryKey: getGetStudentStatsQueryKey() });
+      queryClient.invalidateQueries({ queryKey: getGetMyProgressQueryKey() });
+    }
+  });
+};
   // Called when content finishes — if quiz exists show Take Quiz, else mark complete
   const handlePartFinished = (partIndex = activePartIndex) => {
     setCompletedPartIndexes((previous) => {
