@@ -361,18 +361,18 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
   return (
     <AdminLayout>
       <div className="space-y-6 pb-12">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3">
           <Link href="/admin/courses">
-            <Button variant="ghost" size="icon" className="rounded-full">
+            <Button variant="ghost" size="icon" className="rounded-full shrink-0">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold tracking-tight">Edit Course</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Edit Course</h1>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8 items-start">
+        <div className="grid lg:grid-cols-3 gap-4 sm:gap-8 items-start">
           {/* Course Details Form */}
-          <Card className="lg:col-span-1 shadow-sm sticky top-24">
+          <Card className="lg:col-span-1 shadow-sm lg:sticky lg:top-24">
             <CardHeader>
               <CardTitle>Course Details</CardTitle>
               <CardDescription>Update the basic information.</CardDescription>
@@ -434,9 +434,9 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
 
           {/* Curriculum Manager */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-xl font-bold">Curriculum</h2>
-              <Button onClick={openAddLesson} size="sm" className="gap-2">
+              <Button onClick={openAddLesson} size="sm" className="w-full gap-2 sm:w-auto">
                 <Plus className="h-4 w-4" /> Add Lesson
               </Button>
             </div>
@@ -444,30 +444,32 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
             <div className="space-y-3">
               {course?.lessons?.map((lesson, index) => (
                 <div key={lesson.id} className="bg-card border rounded-lg p-3 shadow-sm">
-                  <div className="flex items-center group">
-                    <div className="mr-3 cursor-grab text-muted-foreground opacity-50 hover:opacity-100">
-                      <GripVertical className="h-5 w-5" />
-                    </div>
-                    <div className="h-8 w-8 bg-muted rounded-md flex items-center justify-center text-sm font-medium mr-4 shrink-0">
-                      {index + 1}
-                    </div>
-                    <div className="flex-1 min-w-0 pr-4">
-                      <h4 className="font-medium truncate">{lesson.title}</h4>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                        <span className="flex items-center gap-1">
-                          {getContentTypeIcon(lesson.contentType)} {lesson.contentType}
-                        </span>
-                        {(lesson.parts ?? []).length > 0 && (
-                          <span>{lesson.parts?.length} parts</span>
-                        )}
-                        {lesson.duration && (
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center group">
+                    <div className="flex items-start gap-3 sm:items-center">
+                      <div className="mt-0.5 cursor-grab text-muted-foreground opacity-50 hover:opacity-100 shrink-0">
+                        <GripVertical className="h-5 w-5" />
+                      </div>
+                      <div className="h-8 w-8 bg-muted rounded-md flex items-center justify-center text-sm font-medium shrink-0">
+                        {index + 1}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-medium break-words">{lesson.title}</h4>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground mt-1">
                           <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" /> {lesson.duration}m
+                            {getContentTypeIcon(lesson.contentType)} {lesson.contentType}
                           </span>
-                        )}
+                          {(lesson.parts ?? []).length > 0 && (
+                            <span>{lesson.parts?.length} parts</span>
+                          )}
+                          {lesson.duration && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" /> {lesson.duration}m
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                    <div className="flex items-center gap-2 shrink-0 mt-1 sm:mt-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                       <Button variant="ghost" size="icon" onClick={() => openEditLesson(lesson)}>
                         <Pencil className="h-4 w-4 text-muted-foreground" />
                       </Button>
@@ -477,14 +479,14 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
                     </div>
                   </div>
                   {(lesson.parts ?? []).length > 0 && (
-                    <div className="mt-3 ml-14 border-l pl-4 space-y-2">
+                    <div className="mt-3 border-l-0 pl-0 sm:ml-14 sm:border-l sm:pl-4 space-y-2">
                       {(lesson.parts ?? []).map((part, partIndex) => (
                         <div key={`${lesson.id}-${partIndex}`} className="text-sm">
-                          <span className="font-medium text-foreground">
+                          <span className="font-medium text-foreground break-words">
                             {partIndex + 1}. {part.title}
                           </span>
                           {part.description && (
-                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                            <p className="text-xs text-muted-foreground mt-0.5 break-words line-clamp-2">
                               {part.description}
                             </p>
                           )}
@@ -509,7 +511,7 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
 
         {/* Lesson Dialog */}
         <Dialog open={isLessonModalOpen} onOpenChange={setIsLessonModalOpen}>
-          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogContent className="w-[calc(100%-1rem)] max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingLessonId ? "Edit Lesson" : "Add New Lesson"}</DialogTitle>
             </DialogHeader>
@@ -530,14 +532,14 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
                 />
                 
                 <div className="space-y-3 rounded-lg border p-3">
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <Label>Lesson Parts</Label>
                       <p className="text-xs text-muted-foreground mt-1">
                         Add the content inside each part.
                       </p>
                     </div>
-                    <Button type="button" variant="outline" size="sm" onClick={addLessonPart} className="gap-2">
+                    <Button type="button" variant="outline" size="sm" onClick={addLessonPart} className="w-full gap-2 sm:w-auto">
                       <Plus className="h-4 w-4" /> Add Part
                     </Button>
                   </div>
@@ -550,7 +552,7 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
                     <div className="space-y-3">
                       {lessonParts.map((part, index) => (
                         <div key={index} className="rounded-md border bg-background p-3 space-y-2">
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                             <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center text-xs font-medium shrink-0">
                               {index + 1}
                             </div>
@@ -558,18 +560,19 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
                               value={part.title}
                               onChange={(event) => updateLessonPart(index, { title: event.target.value })}
                               placeholder="e.g. How to use paragraphs in HTML5"
+                              className="flex-1"
                             />
                             <Button
                               type="button"
                               variant="ghost"
                               size="icon"
                               onClick={() => removeLessonPart(index)}
-                              className="shrink-0"
+                              className="shrink-0 self-end sm:self-auto"
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
                           </div>
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <div className="space-y-2">
                               <Label>Content Type</Label>
                               <Select
