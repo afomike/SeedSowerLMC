@@ -156,6 +156,12 @@ function ManualFinishControl({
 }) {
   return (
     <div className="flex items-center justify-between gap-3 px-4 py-3 bg-card border-t">
+      {!finished && (
+        <Button size="sm" onClick={onFinish} className="gap-2 shadow-sm border-emerald-600/20 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:text-emerald-400">
+          <CheckCircle className="h-4 w-4" />
+          {label}
+        </Button>
+      )}
       <a
         href={originalUrl}
         target="_blank"
@@ -164,17 +170,11 @@ function ManualFinishControl({
           event.preventDefault();
           openOriginalLink(originalUrl);
         }}
-        className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+        className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
       >
         <ExternalLink className="h-3.5 w-3.5" />
         Open original link
       </a>
-      {!finished && (
-        <Button size="sm" onClick={onFinish} className="gap-2 shadow-sm">
-          <CheckCircle className="h-4 w-4" />
-          {label}
-        </Button>
-      )}
     </div>
   );
 }
