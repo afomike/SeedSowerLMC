@@ -177,9 +177,9 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="py-14 sm:py-20">
+        <section className="py-8 sm:py-12">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-[32px] border border-border/70 bg-gradient-to-br from-primary/10 via-background to-secondary/50 p-6 shadow-[0_20px_80px_-40px_hsl(var(--primary))] sm:p-8 md:p-12">
+            <div className="rounded-[32px] border border-border/70 bg-gradient-to-br from-primary/10 via-background to-secondary/50 p-6 sm:p-8 md:p-12">
               <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                 <div className="max-w-2xl">
                   <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary">Start your journey</p>
