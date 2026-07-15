@@ -1,0 +1,1 @@
+import{j as a}from"./index-D1SVuU9A.js";import{N as e}from"./navbar-B_tsFsm9.js";function m({children:s}){return a.jsxs("div",{className:"min-h-[100dvh] flex flex-col bg-slate-50 dark:bg-slate-950",children:[a.jsx(e,{}),a.jsx("main",{className:"flex-1 container mx-auto px-4 py-8",children:s})]})}export{m as A};

@@ -20,7 +20,7 @@ function SiteLogo() {
   });
 
   const logoUrl = settings?.logoUrl;
-  const siteName = settings?.siteName || "DAKAT";
+  const siteName = settings?.siteName || "TOFINISH THE TASK";
 
   return (
     <span className="flex items-center gap-2 font-bold text-xl text-primary">

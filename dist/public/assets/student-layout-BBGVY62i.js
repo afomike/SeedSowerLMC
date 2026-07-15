@@ -1,0 +1,1 @@
+import{j as a}from"./index-D1SVuU9A.js";import{N as o}from"./navbar-B_tsFsm9.js";function e({children:s}){return a.jsxs("div",{className:"min-h-[100dvh] flex flex-col bg-background",children:[a.jsx(o,{}),a.jsx("main",{className:"flex-1 container mx-auto px-4 py-8",children:s})]})}export{e as S};

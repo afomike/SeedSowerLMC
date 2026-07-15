@@ -1,38 +1,19 @@
-# Dependencies
-node_modules/
-pnpm-store/
+node_modules
 
-# Build outputs
-/dist/
-/build/
-/.vite/
-/.vercel/
-/.next/
-/out/
-
-# Environment files
+dist
+.tsbuildinfo
 .env
 .env.local
-.env.*.local
-
-# Logs
+.env.*
+!.env.example
 npm-debug.log*
-pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-*.log
-
-# OS/editor files
+pnpm-debug.log*
 .DS_Store
-Thumbs.db
-.vscode/
-.idea/
-*.swp
-*.swo
+*.log
+*.sqlite
+*.sqlite3
+/drizzle/*.sql
+!/drizzle/0000_lucky_blazing_skull.sql
 
-# Test/coverage
-coverage/
-
-# Backup files
-*.bak
-package.json.bak
