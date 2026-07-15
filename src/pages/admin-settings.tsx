@@ -22,28 +22,70 @@ async function saveSettings(updates: Record<string, string>): Promise<void> {
 }
 
 async function uploadImage(file: File): Promise<string> {
-  const { uploadURL, objectPath } = await apiRequest<{
-    uploadURL: string;
-    objectPath: string;
-  }>("/api/storage/uploads/request-url", {
+  // 1. Get signature parameters from your server
+  const { uploadURL, signature, apiKey, timestamp, folder, publicId, objectPath } = 
+    await apiRequest<{
+      uploadURL: string;
+      signature: string;
+      apiKey: string;
+      timestamp: number;
+      folder: string;
+      publicId: string;
+      objectPath: string;
+    }>("/api/storage/uploads/request-url", {
+      method: "POST",
+      body: JSON.stringify({
+        name: file.name,
+        size: file.size,
+        contentType: file.type,
+      }),
+    });
+
+  // 2. Wrap them inside a FormData object
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("api_key", apiKey);
+  formData.append("timestamp", timestamp.toString());
+  formData.append("signature", signature);
+  formData.append("folder", folder);
+  formData.append("public_id", publicId);
+
+  // 3. POST directly to Cloudinary
+  const uploadRes = await fetch(uploadURL, {
     method: "POST",
-    body: JSON.stringify({
-      name: file.name,
-      size: file.size,
-      contentType: file.type,
-    }),
+    body: formData, // Do NOT set Content-Type header; fetch does this automatically for FormData
   });
 
-  // Keep this one as a raw fetch — it's a signed URL to object storage,
-  // not your API, so no auth header / base URL should be attached.
-  const uploadRes = await fetch(uploadURL, {
-    method: "PUT",
-    headers: { "Content-Type": file.type },
-    body: file,
-  });
-  if (!uploadRes.ok) throw new Error("Upload failed");
+  if (!uploadRes.ok) {
+    const errorData = await uploadRes.json();
+    throw new Error(errorData.error?.message || "Upload failed");
+  }
+
   return `/api/storage${objectPath}`;
 }
+// async function uploadImage(file: File): Promise<string> {
+//   const { uploadURL, objectPath } = await apiRequest<{
+//     uploadURL: string;
+//     objectPath: string;
+//   }>("/api/storage/uploads/request-url", {
+//     method: "POST",
+//     body: JSON.stringify({
+//       name: file.name,
+//       size: file.size,
+//       contentType: file.type,
+//     }),
+//   });
+
+//   // Keep this one as a raw fetch — it's a signed URL to object storage,
+//   // not your API, so no auth header / base URL should be attached.
+//   const uploadRes = await fetch(uploadURL, {
+//     method: "PUT",
+//     headers: { "Content-Type": file.type },
+//     body: file,
+//   });
+//   if (!uploadRes.ok) throw new Error("Upload failed");
+//   return `/api/storage${objectPath}`;
+// }
 
 
 function LogoUpload({
