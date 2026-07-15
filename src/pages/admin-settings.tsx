@@ -22,43 +22,31 @@ async function saveSettings(updates: Record<string, string>): Promise<void> {
 }
 
 async function uploadImage(file: File): Promise<string> {
-  // 1. Get signature parameters from your server
-  const { uploadURL, signature, apiKey, timestamp, folder, publicId, objectPath } = 
-    await apiRequest<{
-      uploadURL: string;
-      signature: string;
-      apiKey: string;
-      timestamp: number;
-      folder: string;
-      publicId: string;
-      objectPath: string;
-    }>("/api/storage/uploads/request-url", {
-      method: "POST",
-      body: JSON.stringify({
-        name: file.name,
-        size: file.size,
-        contentType: file.type,
-      }),
-    });
-
-  // 2. Wrap them inside a FormData object
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("api_key", apiKey);
-  formData.append("timestamp", timestamp.toString());
-  formData.append("signature", signature);
-  formData.append("folder", folder);
-  formData.append("public_id", publicId);
-
-  // 3. POST directly to Cloudinary
-  const uploadRes = await fetch(uploadURL, {
+  const { uploadURL, objectPath } = await apiRequest<{
+    uploadURL: string;
+    objectPath: string;
+  }>("/api/storage/uploads/request-url", {
     method: "POST",
-    body: formData, // Do NOT set Content-Type header; fetch does this automatically for FormData
+    body: JSON.stringify({
+      name: file.name,
+      size: file.size,
+      contentType: file.type,
+    }),
+  });
+
+  // 1. Change the method from PUT to POST to satisfy Cloudinary
+  // 2. We send the raw file as the body directly
+  const uploadRes = await fetch(uploadURL, {
+    method: "POST", 
+    headers: { "Content-Type": file.type },
+    body: file,
   });
 
   if (!uploadRes.ok) {
-    const errorData = await uploadRes.json();
-    throw new Error(errorData.error?.message || "Upload failed");
+    // Attempt to log the error message Cloudinary returns to help debug
+    const errorText = await uploadRes.text();
+    console.error("Cloudinary Error Response:", errorText);
+    throw new Error("Upload failed");
   }
 
   return `/api/storage${objectPath}`;
