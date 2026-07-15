@@ -65,7 +65,10 @@ function getAuthHeader(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function apiRequest<T>(
+  path: string,
+  init: RequestInit = {}
+): Promise<T> {
   const headers = new Headers(init.headers || {});
   headers.set("Accept", "application/json");
 

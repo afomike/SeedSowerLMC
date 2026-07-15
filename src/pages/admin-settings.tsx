@@ -8,40 +8,34 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, Loader2, CheckCircle, Trash2, ImageIcon, MessageSquareText } from "lucide-react";
-import { getAuthToken } from "@/lib/api-client";
+import { apiRequest } from "@/lib/api-client";
 
 async function fetchSettings(): Promise<Record<string, string>> {
-  const res = await fetch("/api/settings");
-  if (!res.ok) throw new Error("Failed to fetch settings");
-  return res.json();
+  return apiRequest<Record<string, string>>("/api/settings");
 }
 
 async function saveSettings(updates: Record<string, string>): Promise<void> {
-  const token = getAuthToken();
-  const res = await fetch("/api/settings", {
+  await apiRequest<void>("/api/settings", {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
     body: JSON.stringify(updates),
   });
-  if (!res.ok) throw new Error("Failed to save settings");
 }
 
 async function uploadImage(file: File): Promise<string> {
-  const token = getAuthToken();
-  const metaRes = await fetch("/api/storage/uploads/request-url", {
+  const { uploadURL, objectPath } = await apiRequest<{
+    uploadURL: string;
+    objectPath: string;
+  }>("/api/storage/uploads/request-url", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }),
+    body: JSON.stringify({
+      name: file.name,
+      size: file.size,
+      contentType: file.type,
+    }),
   });
-  if (!metaRes.ok) throw new Error("Failed to get upload URL");
-  const { uploadURL, objectPath } = await metaRes.json();
 
+  // Keep this one as a raw fetch — it's a signed URL to object storage,
+  // not your API, so no auth header / base URL should be attached.
   const uploadRes = await fetch(uploadURL, {
     method: "PUT",
     headers: { "Content-Type": file.type },
@@ -50,6 +44,7 @@ async function uploadImage(file: File): Promise<string> {
   if (!uploadRes.ok) throw new Error("Upload failed");
   return `/api/storage${objectPath}`;
 }
+
 
 function LogoUpload({
   currentUrl,
