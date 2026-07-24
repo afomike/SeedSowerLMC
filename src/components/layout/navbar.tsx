@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BookOpen, LayoutDashboard, LogOut, Settings, User as UserIcon } from "lucide-react";
 import logoBox from "@/assets/LOGOBOX.png";
 
-const SITE_NAME = "SeedSowerLMC";
+const SITE_NAME = "ToFinish The Task";
 const SITE_LOGO = logoBox;
 
 function SiteLogo() {
