@@ -38,7 +38,7 @@ export default function Home() {
       <header className="absolute inset-x-0 top-0 z-50 flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2 font-semibold text-lg sm:text-xl text-primary">
           <BookOpen className="h-5 w-5 sm:h-6 sm:w-6" />
-          <span>DAKAT</span>
+          <span>TOFINISH THE TASK</span>
         </Link>
 
         <div className="flex items-center gap-2 sm:gap-3">
@@ -81,7 +81,7 @@ export default function Home() {
               </h1>
 
               <p className="mt-6 text-base leading-7 text-slate-200 sm:text-lg sm:leading-8 lg:text-xl">
-                DAKAT delivers structured discipleship training, mentorship-ready content, and measurable growth in a modern platform built for ministries and learners alike.
+                TOFINISH THE TASK delivers structured discipleship training, mentorship-ready content, and measurable growth in a modern platform built for ministries and learners alike.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -122,7 +122,7 @@ export default function Home() {
         <section className="border-y bg-slate-50/80 py-14 dark:bg-slate-900/50 sm:py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-8 max-w-3xl sm:mb-12">
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary">Why DAKAT stands out</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary">Why TOFINISH THE TASK stands out</p>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">Built for modern discipleship and ministry growth</h2>
               <p className="mt-4 text-base leading-7 text-muted-foreground sm:text-lg">
                 The platform balances spiritual depth with polished digital delivery so every learner receives a premium, focused experience.
@@ -169,7 +169,7 @@ export default function Home() {
                     A polished path from curiosity to spiritual confidence
                   </h3>
                   <p className="mt-3 max-w-xl text-sm leading-7 text-slate-200 sm:text-base">
-                    Whether you are joining from a local ministry or learning independently, DAKAT brings clarity, momentum, and purpose to every lesson.
+                    Whether you are joining from a local ministry or learning independently, TOFINISH THE TASK brings clarity, momentum, and purpose to every lesson.
                   </p>
                 </div>
               </div>
@@ -203,10 +203,10 @@ export default function Home() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 text-center md:flex-row md:text-left">
           <div className="flex items-center gap-2 font-semibold text-lg text-primary">
             <BookOpen className="h-5 w-5" />
-            <span>DAKAT</span>
+            <span>TOFINISH THE TASK</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} DAKAT — Discipleship And Kingdom Advocacy Training. All rights reserved.
+            © {new Date().getFullYear()} TOFINISH THE TASK — Discipleship And Kingdom Advocacy Training. All rights reserved.
           </p>
         </div>
       </footer>

@@ -51,7 +51,7 @@ export default function Register() {
         setAuthUser(response.token);
 
         toast({
-          title: "Welcome to DAKAT!",
+          title: "Welcome to TOFINISH THE TASK!",
           description: "Your discipleship journey begins now. God bless you.",
         });
 
@@ -97,7 +97,7 @@ export default function Register() {
           <div className="p-6 sm:p-8 lg:p-10">
             <Link href="/" className="mb-8 flex items-center gap-2 text-2xl font-semibold text-primary transition-opacity hover:opacity-80">
               <BookOpen className="h-8 w-8" />
-              <span>DAKAT</span>
+              <span>TOFINISH THE TASK</span>
             </Link>
 
             <Card className="border-white/10 bg-slate-950/70 text-white shadow-2xl">

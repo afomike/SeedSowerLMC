@@ -41,7 +41,7 @@ export default function Login() {
 
         toast({
           title: "Welcome back!",
-          description: "You are now signed in to your DAKAT account.",
+          description: "You are now signed in to your TOFINISH THE TASK account.",
         });
 
         if (response.user.role === "admin") {
@@ -90,7 +90,7 @@ export default function Login() {
           <div className="p-6 sm:p-8 lg:p-10">
             <Link href="/" className="mb-8 flex items-center gap-2 text-2xl font-semibold text-primary transition-opacity hover:opacity-80">
               <BookOpen className="h-8 w-8" />
-              <span>DAKAT</span>
+              <span>TOFINISH THE TASK</span>
             </Link>
 
             <Card className="border-white/10 bg-slate-950/70 text-white shadow-2xl">
@@ -140,7 +140,7 @@ export default function Login() {
               </CardContent>
               <CardFooter className="mt-2 flex flex-col border-t border-white/10 p-6 text-center">
                 <div className="text-sm text-slate-300">
-                  New to DAKAT?{" "}
+                  New to TOFINISH THE TASK?{" "}
                   <Link href="/register" className="font-semibold text-primary hover:underline">
                     Create an account
                   </Link>
