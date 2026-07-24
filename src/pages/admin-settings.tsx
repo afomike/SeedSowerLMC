@@ -35,7 +35,7 @@ async function uploadImage(file: File): Promise<string> {
   });
 
   // 1. Change the method from PUT to POST to satisfy Cloudinary
-  // 2. We send the raw file as the body directly
+  // 2. We send the raw file as the body directly of
   const uploadRes = await fetch(uploadURL, {
     method: "POST", 
     headers: { "Content-Type": file.type },
