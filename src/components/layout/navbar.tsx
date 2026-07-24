@@ -4,36 +4,20 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BookOpen, LayoutDashboard, LogOut, Settings, User as UserIcon } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import logoBox from "@/assets/LOGOBOX.png";
 
-async function fetchSettings(): Promise<Record<string, string>> {
-  const res = await fetch("/api/settings");
-  if (!res.ok) return {};
-  return res.json();
-}
+const SITE_NAME = "SeedSowerLMC";
+const SITE_LOGO = logoBox;
 
 function SiteLogo() {
-  const { data: settings } = useQuery({
-    queryKey: ["site-settings"],
-    queryFn: fetchSettings,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const logoUrl = settings?.logoUrl;
-  const siteName = settings?.siteName || "TOFINISH THE TASK";
-
   return (
     <span className="flex items-center gap-2 font-bold text-xl text-primary">
-      {logoUrl ? (
-        <img
-          src={logoUrl}
-          alt={siteName}
-          className="h-8 w-8 object-contain rounded"
-        />
-      ) : (
-        <BookOpen className="h-6 w-6" />
-      )}
-      <span>{siteName}</span>
+      <img
+        src={SITE_LOGO}
+        alt={SITE_NAME}
+        className="h-8 w-8 object-contain rounded"
+      />
+      <span>{SITE_NAME}</span>
     </span>
   );
 }

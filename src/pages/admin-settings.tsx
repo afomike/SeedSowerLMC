@@ -252,7 +252,7 @@ export default function AdminSettings() {
           </CardContent>
         </Card>
 
-        {/* Display Name */}
+        {/* Display Name (temporarily hidden from the admin panel)
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle>Platform Name</CardTitle>
@@ -268,6 +268,7 @@ export default function AdminSettings() {
             />
           </CardContent>
         </Card>
+        */}
 
         {/* Welcome / About Message */}
         <Card className="shadow-sm">
