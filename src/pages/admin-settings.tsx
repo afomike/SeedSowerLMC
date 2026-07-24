@@ -21,6 +21,37 @@ async function saveSettings(updates: Record<string, string>): Promise<void> {
   });
 }
 
+// async function uploadImage(file: File): Promise<string> {
+//   const { uploadURL, objectPath } = await apiRequest<{
+//     uploadURL: string;
+//     objectPath: string;
+//   }>("/api/storage/uploads/request-url", {
+//     method: "POST",
+//     body: JSON.stringify({
+//       name: file.name,
+//       size: file.size,
+//       contentType: file.type,
+//     }),
+//   });
+
+//   // 1. Change the method from PUT to POST to satisfy Cloudinary
+//   // 2. We send the raw file as the body directly of
+//   const uploadRes = await fetch(uploadURL, {
+//     method: "POST", 
+//     headers: { "Content-Type": file.type },
+//     body: file,
+//   });
+
+//   if (!uploadRes.ok) {
+//     // Attempt to log the error message Cloudinary returns to help debug
+//     const errorText = await uploadRes.text();
+//     console.error("Cloudinary Error Response:", errorText);
+//     throw new Error("Upload failed");
+//   }
+
+//   return `/api/storage${objectPath}`;
+// }
+
 async function uploadImage(file: File): Promise<string> {
   const { uploadURL, objectPath } = await apiRequest<{
     uploadURL: string;
@@ -34,23 +65,23 @@ async function uploadImage(file: File): Promise<string> {
     }),
   });
 
-  // 1. Change the method from PUT to POST to satisfy Cloudinary
-  // 2. We send the raw file as the body directly of
+  const formData = new FormData();
+  formData.append("file", file);
+
   const uploadRes = await fetch(uploadURL, {
-    method: "POST", 
-    headers: { "Content-Type": file.type },
-    body: file,
+    method: "POST",
+    body: formData,
   });
 
   if (!uploadRes.ok) {
-    // Attempt to log the error message Cloudinary returns to help debug
     const errorText = await uploadRes.text();
-    console.error("Cloudinary Error Response:", errorText);
-    throw new Error("Upload failed");
+    console.error("Cloudinary Error:", errorText);
+    throw new Error("Cloudinary upload failed");
   }
 
   return `/api/storage${objectPath}`;
 }
+
 // async function uploadImage(file: File): Promise<string> {
 //   const { uploadURL, objectPath } = await apiRequest<{
 //     uploadURL: string;
