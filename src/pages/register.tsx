@@ -8,9 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { BookOpen, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import authImage from "@/assets/imagebg_3.png";
+import logoBox from "@/assets/LOGOBOX.png";
+
+const SITE_NAME = "TOFINISH THE TASK";
 
 const registerSchema = z
   .object({
@@ -51,7 +54,7 @@ export default function Register() {
         setAuthUser(response.token);
 
         toast({
-          title: "Welcome to TOFINISH THE TASK!",
+          title: `Welcome to ${SITE_NAME}!`,
           description: "Your discipleship journey begins now. God bless you.",
         });
 
@@ -96,8 +99,8 @@ export default function Register() {
 
           <div className="p-6 sm:p-8 lg:p-10">
             <Link href="/" className="mb-8 flex items-center gap-2 text-2xl font-semibold text-primary transition-opacity hover:opacity-80">
-              <BookOpen className="h-8 w-8" />
-              <span>TOFINISH THE TASK</span>
+              <img src={logoBox} alt={SITE_NAME} className="h-8 w-8 rounded object-contain" />
+              <span>{SITE_NAME}</span>
             </Link>
 
             <Card className="border-white/10 bg-slate-950/70 text-white shadow-2xl">

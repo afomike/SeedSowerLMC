@@ -8,9 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { BookOpen, ShieldCheck, Sparkles } from "lucide-react";
+import { ShieldCheck, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import authImage from "@/assets/imagebg_4.png";
+import logoBox from "@/assets/LOGOBOX.png";
+
+const SITE_NAME = "TOFINISH THE TASK";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -41,7 +44,7 @@ export default function Login() {
 
         toast({
           title: "Welcome back!",
-          description: "You are now signed in to your TOFINISH THE TASK account.",
+          description: `You are now signed in to your ${SITE_NAME} account.`,
         });
 
         if (response.user.role === "admin") {
@@ -89,8 +92,8 @@ export default function Login() {
 
           <div className="p-6 sm:p-8 lg:p-10">
             <Link href="/" className="mb-8 flex items-center gap-2 text-2xl font-semibold text-primary transition-opacity hover:opacity-80">
-              <BookOpen className="h-8 w-8" />
-              <span>TOFINISH THE TASK</span>
+              <img src={logoBox} alt={SITE_NAME} className="h-8 w-8 rounded object-contain" />
+              <span>{SITE_NAME}</span>
             </Link>
 
             <Card className="border-white/10 bg-slate-950/70 text-white shadow-2xl">
@@ -140,7 +143,7 @@ export default function Login() {
               </CardContent>
               <CardFooter className="mt-2 flex flex-col border-t border-white/10 p-6 text-center">
                 <div className="text-sm text-slate-300">
-                  New to TOFINISH THE TASK?{" "}
+                  New to {SITE_NAME}?{" "}
                   <Link href="/register" className="font-semibold text-primary hover:underline">
                     Create an account
                   </Link>
