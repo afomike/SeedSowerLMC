@@ -9,6 +9,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 
+type EnrolledCourse = {
+  courseId: string;
+  courseTitle: string;
+  thumbnailUrl?: string;
+  totalLessons: number;
+  completedLessons: number;
+  progressPercent: number;
+  isCompleted: boolean;
+  lastActivityAt?: string;
+};
+
+type MyProgress = {
+  enrolledCourses: EnrolledCourse[];
+};
+
 async function fetchSettings(): Promise<Record<string, string>> {
   try {
     const res = await fetch("/api/settings");

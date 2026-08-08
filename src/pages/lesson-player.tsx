@@ -258,7 +258,14 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
       queryClient.invalidateQueries({ queryKey: getGetCourseProgressQueryKey(courseId) });
       queryClient.invalidateQueries({ queryKey: getGetStudentStatsQueryKey() });
       queryClient.invalidateQueries({ queryKey: getGetMyProgressQueryKey() });
-    }
+    },
+    onError: (error: any) => {
+      toast({
+        variant: "destructive",
+        title: "Could not complete lesson",
+        description: error?.message ?? "Please try again.",
+      });
+    },
   });
 };
   // Called when content finishes — if quiz exists show Take Quiz, else mark complete
