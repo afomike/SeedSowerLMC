@@ -1,6 +1,9 @@
-import { useGetCourse, useEnrollCourse, getGetCourseQueryKey, getGetMyProgressQueryKey, getGetStudentStatsQueryKey } from "@/lib/api-client";
+import { useState } from "react";
+import { useGetCourse, useEnrollCourse, getGetCourseQueryKey, getGetMyProgressQueryKey, getGetStudentStatsQueryKey, useGetCourseAssignment, useSubmitCourseAssignment, getCourseAssignmentQueryKey } from "@/lib/api-client";
 import { StudentLayout } from "@/components/layout/student-layout";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +26,9 @@ export default function CourseDetail({ params }: { params: { id: string } }) {
   });
 
   const enrollMutation = useEnrollCourse();
+  const [assignmentUrl, setAssignmentUrl] = useState("");
+  const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
+  const submitAssignmentMutation = useSubmitCourseAssignment();
 
   const handleEnroll = () => {
     enrollMutation.mutate({ id: courseId }, {
@@ -91,6 +97,39 @@ export default function CourseDetail({ params }: { params: { id: string } }) {
   const lessonCount = course.lessonCount ?? lessons.length;
   const progressPercent = lessonCount > 0 ? (completedLessons / lessonCount) * 100 : 0;
   const isFullyCompleted = lessonCount > 0 && completedLessons === lessonCount;
+
+  const { data: assignment, isLoading: isAssignmentLoading } = useGetCourseAssignment(courseId, {
+    query: { enabled: !!courseId && isFullyCompleted, queryKey: getCourseAssignmentQueryKey(courseId) },
+  });
+
+  const assignmentStatus = assignment?.status;
+  const hasSubmittedAssignment = assignment?.hasSubmission === true;
+  const assignmentApproved = assignmentStatus === "approved";
+  const assignmentPending = assignmentStatus === "pending";
+  const assignmentRejected = assignmentStatus === "rejected";
+
+  const handleSubmitAssignment = () => {
+    submitAssignmentMutation.mutate({
+      courseId,
+      data: { submissionUrl: assignmentUrl.trim() },
+    }, {
+      onSuccess: () => {
+        toast({
+          title: "Assignment submitted",
+          description: "Your link has been sent for admin review.",
+        });
+        queryClient.invalidateQueries({ queryKey: getCourseAssignmentQueryKey(courseId) });
+        setAssignmentModalOpen(false);
+      },
+      onError: (error) => {
+        toast({
+          variant: "destructive",
+          title: "Submission failed",
+          description: (error as any)?.message ?? "Unable to submit assignment.",
+        });
+      },
+    });
+  };
 
   return (
     <StudentLayout>
@@ -217,14 +256,44 @@ export default function CourseDetail({ params }: { params: { id: string } }) {
                         <CheckCircle className="h-5 w-5 shrink-0 mt-0.5" />
                         <div>
                           <p className="font-medium text-sm">Module Completed!</p>
-                          <p className="text-xs opacity-90 mt-1">Well done, faithful servant. Your certificate awaits.</p>
+                          <p className="text-xs opacity-90 mt-1">Well done, faithful servant. Submit the final assignment to request approval and claim your certificate.</p>
                         </div>
                       </div>
-                      <Link href={`/certificates/${courseId}`} className="block">
-                        <Button className="w-full gap-2 text-base h-12 shadow-md">
-                          <Trophy className="h-5 w-5" /> View Certificate
+
+                      {assignmentPending && (
+                        <div className="rounded-xl border border-amber-300/40 bg-amber-50 p-4 text-sm text-amber-900">
+                          <p className="font-medium">Assignment pending review</p>
+                          <p className="mt-1">Your submission is under admin review. Once approved, your certificate will be available.</p>
+                        </div>
+                      )}
+
+                      {assignmentApproved && (
+                        <div className="rounded-xl border border-green-300/40 bg-green-50 p-4 text-sm text-green-900">
+                          <p className="font-medium">Assignment approved</p>
+                          <p className="mt-1">Your certificate is ready. Click below to view it.</p>
+                        </div>
+                      )}
+
+                      {assignmentRejected && (
+                        <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive-foreground">
+                          <p className="font-medium">Assignment returned</p>
+                          <p className="mt-1">Your previous submission was rejected. Please submit an updated link.</p>
+                        </div>
+                      )}
+
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Button
+                          className="w-full gap-2 text-base h-12 shadow-md"
+                          onClick={() => setAssignmentModalOpen(true)}
+                        >
+                          {hasSubmittedAssignment ? "Resubmit Assignment" : "Submit Assignment"}
                         </Button>
-                      </Link>
+                        <Link href={`/certificates/${courseId}`} className="block">
+                          <Button disabled={!assignmentApproved} className="w-full gap-2 text-base h-12 shadow-md">
+                            <Trophy className="h-5 w-5" /> View Certificate
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                   ) : (
                     <Link href={`/courses/${courseId}/lessons/${course.lessons.find(l => !l.isCompleted && !l.isLocked)?.id || course.lessons[0]?.id}`} className="block">
@@ -265,6 +334,34 @@ export default function CourseDetail({ params }: { params: { id: string } }) {
             </div>
           </div>
         </div>
+        <Dialog open={assignmentModalOpen} onOpenChange={setAssignmentModalOpen}>
+          <DialogContent className="w-[calc(100%-1rem)] max-w-lg">
+            <DialogHeader>
+              <DialogTitle>{hasSubmittedAssignment ? "Resubmit Assignment" : "Submit Assignment"}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <p className="text-sm text-muted-foreground">
+                Share the link to your assignment on Google Drive, Dropbox, or another document host.
+              </p>
+              <Input
+                value={assignmentUrl}
+                onChange={(event) => setAssignmentUrl(event.target.value)}
+                placeholder="https://drive.google.com/file/d/..."
+              />
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setAssignmentModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSubmitAssignment}
+                  disabled={submitAssignmentMutation.isPending || !assignmentUrl.trim()}
+                >
+                  {submitAssignmentMutation.isPending ? "Submitting..." : "Submit"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </StudentLayout>
   );

@@ -314,6 +314,40 @@ export function useGetStudentStats(options?: { query?: Record<string, any> }) {
   });
 }
 
+export const getCourseAssignmentQueryKey = (courseId: string) => ["courses", courseId, "assignment"];
+export function useGetCourseAssignment(courseId: string, options?: { query?: Record<string, any> }) {
+  return useQuery({
+    ...buildQueryOptions(getCourseAssignmentQueryKey(courseId), options, () => apiRequest<{ hasSubmission: boolean; id?: string; submissionUrl?: string; status?: string; reviewedAt?: string; createdAt?: string; updatedAt?: string; }>(`/api/courses/${courseId}/assignment`)),
+  });
+}
+
+export function useSubmitCourseAssignment() {
+  return useMutation({
+    mutationFn: ({ courseId, data }: { courseId: string; data: { submissionUrl: string } }) =>
+      apiRequest(`/api/courses/${courseId}/assignment`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+  });
+}
+
+export const getAdminAssignmentsQueryKey = () => ["admin", "assignments"];
+export function useGetAdminAssignments(options?: { query?: Record<string, any> }) {
+  return useQuery({
+    ...buildQueryOptions(getAdminAssignmentsQueryKey(), options, () => apiRequest<any[]>(`/api/admin/assignments`)),
+  });
+}
+
+export function useReviewAssignmentStatus() {
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { status: "approved" | "rejected" } }) =>
+      apiRequest(`/api/admin/assignments/${id}/status`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }),
+  });
+}
+
 export const getListUsersQueryKey = () => ["admin", "users"];
 export function useListUsers(options?: { query?: Record<string, any> }) {
   return useQuery({
