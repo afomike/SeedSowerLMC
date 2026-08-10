@@ -209,7 +209,7 @@ export default function Home() {
             <span>{SITE_NAME}</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} {SITE_NAME} Discipleship And Kingdom Advocacy Training. All rights reserved.
+            © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
           </p>
         </div>
       </footer>

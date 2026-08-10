@@ -107,7 +107,7 @@ export default function Register() {
               <CardHeader className="space-y-2 pb-6 text-center">
                 <CardTitle className="text-2xl font-semibold tracking-tight">Join the Training</CardTitle>
                 <CardDescription className="text-slate-300">
-                  Register to begin your discipleship and kingdom advocacy journey
+                  Register to begin any of the available trainings.
                 </CardDescription>
               </CardHeader>
               <CardContent>
