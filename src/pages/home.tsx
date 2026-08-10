@@ -128,7 +128,7 @@ export default function Home() {
               <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary">Why {SITE_NAME} stands out</p>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">Built for Modern Discipleship and Ministry Growth</h2>
               <p className="mt-4 text-base leading-7 text-muted-foreground sm:text-lg">
-                The platform balances spiritual depth with polished digital delivery so every learner receives a premium, focused experience.
+                The platform balances spiritual depth with polished digital delivery, so every learner receives a premium, focused experience.
               </p>
             </div>
 
