@@ -257,7 +257,7 @@ export default function AdminSettings() {
           <CardHeader>
             <CardTitle>Platform Name</CardTitle>
             <CardDescription>
-              Shown as the text name beside the logo in the navbar. Defaults to "TOFINISH THE TASK" if not set.
+              Shown as the text name beside the logo in the navbar. Defaults to "Tofinishthetask" if not set.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -322,7 +322,7 @@ function SiteNameField({
           id="siteName"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder="TOFINISH THE TASK"
+          placeholder="Tofinishthetask"
         />
       </div>
       <Button onClick={() => onSave(value)} disabled={saving}>
@@ -350,7 +350,7 @@ function WelcomeMessageField({
         id="welcomeMessage"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder={`e.g. "Welcome to TOFINISH THE TASK! 'Go therefore and make disciples of all nations…' — Matthew 28:19. We're glad you're here."`}
+        placeholder={`e.g. "Welcome to Tofinishthetask! 'Go therefore and make disciples of all nations…' — Matthew 28:19. We're glad you're here."`}
         className="min-h-[120px] resize-y"
         maxLength={charLimit}
       />

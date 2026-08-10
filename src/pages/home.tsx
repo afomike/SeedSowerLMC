@@ -7,7 +7,7 @@ import ministryImage from "@/assets/imagebg_2.png";
 import learningImage from "@/assets/imagebg_3.png";
 import logoBox from "@/assets/LOGOBOX.png";
 
-const SITE_NAME = "TOFINISH THE TASK";
+const SITE_NAME = "Tofinishthetask";
 
 const highlights = [
   { label: "Structured discipleship paths", value: "100+" },

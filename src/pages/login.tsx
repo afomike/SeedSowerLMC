@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import authImage from "@/assets/imagebg_4.png";
 import logoBox from "@/assets/LOGOBOX.png";
 
-const SITE_NAME = "TOFINISH THE TASK";
+const SITE_NAME = "Tofinishthetask";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -103,7 +103,7 @@ export default function Login() {
                 </div>
                 <CardTitle className="text-2xl font-semibold tracking-tight">Welcome back</CardTitle>
                 <CardDescription className="text-slate-300">
-                  Sign in to continue your discipleship training
+                  Sign in to continue your training
                 </CardDescription>
               </CardHeader>
               <CardContent>

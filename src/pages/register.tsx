@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import authImage from "@/assets/imagebg_3.png";
 import logoBox from "@/assets/LOGOBOX.png";
 
-const SITE_NAME = "TOFINISH THE TASK";
+const SITE_NAME = "Tofinishthetask";
 
 const registerSchema = z
   .object({
