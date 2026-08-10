@@ -172,7 +172,7 @@ export default function Home() {
                     A polished path from curiosity to spiritual confidence
                   </h3>
                   <p className="mt-3 max-w-xl text-sm leading-7 text-slate-200 sm:text-base">
-                    Whether you are joining from a local ministry or learning independently, {SITE_NAME} brings clarity, momentum, and purpose to every lesson.
+                    Whether you are joining from a local ministry or learning independently, {SITE_NAME} brings clarity, momentum, and purpose to every lesson for the HARVEST.
                   </p>
                 </div>
               </div>
