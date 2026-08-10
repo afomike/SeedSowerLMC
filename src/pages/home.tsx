@@ -77,9 +77,9 @@ export default function Home() {
               </div>
 
               <h1 className="mt-6 text-3xl font-semibold leading-[1.05] tracking-tight text-balance sm:text-5xl lg:text-7xl">
-                Equiping believers for
+                Equiping Believers for
                 <span className="block bg-gradient-to-r from-emerald-300 via-primary to-lime-300 bg-clip-text text-transparent">
-                  Kingdom impact.
+                  Kingdom Impact.
                 </span>
               </h1>
 
