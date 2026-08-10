@@ -166,7 +166,7 @@ export default function Home() {
                 <div className="absolute bottom-0 left-0 right-0 p-5 text-white sm:p-8">
                   <div className="flex items-center gap-2 text-xs font-medium text-emerald-300 sm:text-sm">
                     <PlayCircle className="h-4 w-4" />
-                    Learn anywhere, grow deeply
+                    Learn anywhere, grow deeply to engage the harvest
                   </div>
                   <h3 className="mt-3 max-w-[18ch] text-xl font-semibold leading-tight break-words sm:max-w-none sm:text-2xl">
                     A polished path from curiosity to spiritual confidence
