@@ -73,7 +73,7 @@ export default function Home() {
             <div className="max-w-2xl text-white">
               <div className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm font-medium text-slate-100 backdrop-blur-md">
                 <Sparkles className="mr-2 h-4 w-4 text-primary" />
-                Christian e-learning, designed with excellence
+                Your Christian E-learning Platform
               </div>
 
               <h1 className="mt-6 text-3xl font-semibold leading-[1.05] tracking-tight text-balance sm:text-5xl lg:text-7xl">
