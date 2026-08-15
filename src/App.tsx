@@ -44,9 +44,11 @@ function Router() {
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
 
+        {/* Public course browsing */}
+        <Route path="/courses" component={CourseCatalog} />
+
         {/* Student protected routes */}
         <ProtectedRoute path="/dashboard" component={Dashboard} />
-        <ProtectedRoute path="/courses" component={CourseCatalog} />
         <ProtectedRoute path="/courses/:id" component={CourseDetail} />
         <ProtectedRoute path="/courses/:id/lessons/:lessonId" component={LessonPlayer} />
         <ProtectedRoute path="/profile" component={Profile} />

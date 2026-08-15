@@ -1,6 +1,8 @@
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import { CourseCard } from "@/components/course-card";
+import { useListCourses } from "@/lib/api-client";
 import { ArrowRight, ShieldCheck, Zap, Award, Sparkles, PlayCircle, GraduationCap } from "lucide-react";
 import heroImage from "@/assets/imagebg_1.png";
 import ministryImage from "@/assets/imagebg_2.png";
@@ -35,6 +37,8 @@ const outcomes = [
 
 export default function Home() {
   const { user } = useAuth();
+  const { data: courses = [] } = useListCourses();
+  const featuredCourses = courses.slice(0, 3);
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-background selection:bg-primary/20">
@@ -179,6 +183,37 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {featuredCourses.length > 0 && (
+          <section className="py-8 sm:py-12">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div className="mb-6 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.25em] text-primary">Featured courses</p>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Explore our learning tracks</h2>
+                </div>
+                <Link href="/courses">
+                  <Button variant="ghost" className="hidden sm:flex">View all courses</Button>
+                </Link>
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {featuredCourses.map((course) => (
+                  <CourseCard
+                    key={course.id}
+                    id={course.id}
+                    title={course.title}
+                    description={course.description ?? ""}
+                    thumbnailUrl={course.thumbnailUrl ?? undefined}
+                    lessonCount={course.lessonCount ?? 0}
+                    enrollmentCount={course.enrollmentCount ?? 0}
+                    href={`/courses/${course.id}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         <section className="py-8 sm:py-12">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
