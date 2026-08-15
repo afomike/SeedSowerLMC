@@ -54,6 +54,33 @@ export type ApiError = {
   data?: Record<string, any>;
 };
 
+export type StudentStats = {
+  totalEnrolled?: number;
+  completedCourses?: number;
+  completedLessons?: number;
+  remainingLessons?: number;
+  overallProgress?: number;
+};
+
+export type EnrolledCourseSummary = {
+  courseId: string;
+  courseTitle: string;
+  thumbnailUrl?: string | null;
+  totalLessons: number;
+  completedLessons: number;
+  progressPercent: number;
+  isCompleted: boolean;
+  lastActivityAt?: string | null;
+};
+
+export type StudentProgress = {
+  totalEnrolled?: number;
+  totalCompleted?: number;
+  totalLessons?: number;
+  completedLessons?: number;
+  enrolledCourses?: EnrolledCourseSummary[];
+};
+
 function buildUrl(path: string): string {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   if (!baseUrl) return normalizedPath;
@@ -302,15 +329,15 @@ export function useEnrollCourse() {
 
 export const getGetMyProgressQueryKey = () => ["student", "progress"];
 export function useGetMyProgress(options?: { query?: Record<string, any> }) {
-  return useQuery({
-    ...buildQueryOptions(getGetMyProgressQueryKey(), options, () => apiRequest(`/api/student/progress`)),
+  return useQuery<StudentProgress>({
+    ...buildQueryOptions(getGetMyProgressQueryKey(), options, () => apiRequest<StudentProgress>(`/api/student/progress`)),
   });
 }
 
 export const getGetStudentStatsQueryKey = () => ["student", "stats"];
 export function useGetStudentStats(options?: { query?: Record<string, any> }) {
-  return useQuery({
-    ...buildQueryOptions(getGetStudentStatsQueryKey(), options, () => apiRequest(`/api/student/stats`)),
+  return useQuery<StudentStats>({
+    ...buildQueryOptions(getGetStudentStatsQueryKey(), options, () => apiRequest<StudentStats>(`/api/student/stats`)),
   });
 }
 

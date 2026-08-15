@@ -45,6 +45,12 @@ export default function Dashboard() {
   const { data: courses, isLoading: isCoursesLoading } = useListCourses();
 
   const isLoading = isStatsLoading || isProgressLoading || isCoursesLoading;
+  const enrolledCourses = Array.isArray(progress?.enrolledCourses) ? progress.enrolledCourses : [];
+  const inProgressCourses = enrolledCourses.filter((course) => !course.isCompleted);
+  const completedCoursesList = enrolledCourses.filter((course) => course.isCompleted);
+  const recommendedCourses = Array.isArray(courses)
+    ? courses.filter((course) => !enrolledCourses.some((enrolled) => enrolled.courseId === course.id)).slice(0, 3)
+    : [];
 
   if (isLoading) {
     return (
@@ -66,14 +72,6 @@ export default function Dashboard() {
       </StudentLayout>
     );
   }
-
-  const enrolledCourses = progress?.enrolledCourses || [];
-  const inProgressCourses = enrolledCourses.filter(c => !c.isCompleted);
-  const completedCoursesList = enrolledCourses.filter(c => c.isCompleted);
-  
-  const recommendedCourses = courses?.filter(
-    c => !enrolledCourses.some(ec => ec.courseId === c.id)
-  ).slice(0, 3) || [];
 
   return (
     <StudentLayout>
@@ -176,10 +174,10 @@ export default function Dashboard() {
                   key={course.id}
                   id={course.id}
                   title={course.title}
-                  description={course.description}
-                  thumbnailUrl={course.thumbnailUrl}
-                  lessonCount={course.lessonCount}
-                  enrollmentCount={course.enrollmentCount}
+                  description={course.description ?? ""}
+                  thumbnailUrl={course.thumbnailUrl ?? undefined}
+                  lessonCount={course.lessonCount ?? 0}
+                  enrollmentCount={course.enrollmentCount ?? 0}
                   href={`/courses/${course.id}`}
                 />
               ))}

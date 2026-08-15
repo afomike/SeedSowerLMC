@@ -26,8 +26,9 @@ export function Navbar() {
   const { user, logout } = useAuth();
   const [location] = useLocation();
 
-  const getInitials = (name: string) => {
-    return name
+  const getInitials = (name?: string) => {
+    const safeName = name?.trim() || "User";
+    return safeName
       .split(" ")
       .map((n) => n[0])
       .join("")

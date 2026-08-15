@@ -93,7 +93,7 @@ export default function CourseDetail({ params }: { params: { id: string } }) {
   }
 
   const lessons = course.lessons ?? [];
-  const completedLessons = lessons.filter(l => l.isCompleted).length;
+  const completedLessons = lessons.filter((lesson) => lesson.isCompleted).length;
   const lessonCount = course.lessonCount ?? lessons.length;
   const progressPercent = lessonCount > 0 ? (completedLessons / lessonCount) * 100 : 0;
   const isFullyCompleted = lessonCount > 0 && completedLessons === lessonCount;
@@ -160,11 +160,11 @@ export default function CourseDetail({ params }: { params: { id: string } }) {
           <div className="md:col-span-2 space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold tracking-tight">Training Curriculum</h2>
-              <span className="text-muted-foreground text-sm font-medium">{course.lessons.length} {course.lessons.length === 1 ? "lesson" : "lessons"}</span>
+              <span className="text-muted-foreground text-sm font-medium">{lessons.length} {lessons.length === 1 ? "lesson" : "lessons"}</span>
             </div>
 
             <div className="space-y-3">
-              {course.lessons.map((lesson, index) => {
+              {lessons.map((lesson, index) => {
                 const isLocked = lesson.isLocked;
                 const isCompleted = lesson.isCompleted;
                 const isAvailable = course.isEnrolled && !isLocked;
@@ -195,8 +195,8 @@ export default function CourseDetail({ params }: { params: { id: string } }) {
                       </h3>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
                         <span className="flex items-center gap-1">
-                          {getContentTypeIcon(lesson.contentType)}
-                          <span className="capitalize">{lesson.contentType}</span>
+                          {getContentTypeIcon(lesson.contentType ?? "video")}
+                          <span className="capitalize">{lesson.contentType ?? "video"}</span>
                         </span>
                         {lesson.duration && (
                           <span className="flex items-center gap-1">
@@ -224,7 +224,7 @@ export default function CourseDetail({ params }: { params: { id: string } }) {
                 );
               })}
               
-              {course.lessons.length === 0 && (
+              {lessons.length === 0 && (
                 <div className="text-center p-12 border border-dashed rounded-xl bg-muted/30">
                   <BookOpen className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-20" />
                   <p className="text-muted-foreground">No lessons have been added to this training module yet.</p>
@@ -296,7 +296,7 @@ export default function CourseDetail({ params }: { params: { id: string } }) {
                       </div>
                     </div>
                   ) : (
-                    <Link href={`/courses/${courseId}/lessons/${course.lessons.find(l => !l.isCompleted && !l.isLocked)?.id || course.lessons[0]?.id}`} className="block">
+                    <Link href={`/courses/${courseId}/lessons/${lessons.find((lesson) => !lesson.isCompleted && !lesson.isLocked)?.id ?? lessons[0]?.id ?? courseId}`} className="block">
                       <Button className="w-full gap-2 text-base h-12 shadow-md hover:-translate-y-0.5 transition-transform">
                         <PlaySquare className="h-5 w-5" /> Continue Training
                       </Button>
