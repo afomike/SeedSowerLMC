@@ -11,6 +11,7 @@ import { BookOpen, CheckCircle, Clock, FileText, Headphones, Lock, PlayCircle, P
 import { Link, useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { formatDuration } from "@/lib/duration";
 
 export default function CourseDetail({ params }: { params: { id: string } }) {
   const courseId = params.id;
@@ -204,7 +205,7 @@ export default function CourseDetail({ params }: { params: { id: string } }) {
                         {lesson.duration && (
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            {Math.floor(lesson.duration / 60)}:{String(lesson.duration % 60).padStart(2, '0')}
+                            {formatDuration(lesson.duration)}
                           </span>
                         )}
                       </div>

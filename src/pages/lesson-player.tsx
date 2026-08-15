@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { QuizModal } from "@/components/quiz-modal";
 import { getAuthToken } from "@/lib/api-client";
+import { formatDuration } from "@/lib/duration";
 
 async function fetchLessonQuiz(lessonId: string) {
   const token = getAuthToken();
@@ -556,7 +557,7 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
                           )}
                           <p className="text-xs text-muted-foreground mt-1 capitalize">
                             {part.contentType}
-                            {part.duration ? ` · ${Math.floor(part.duration / 60)}:${String(part.duration % 60).padStart(2, "0")}` : ""}
+                            {part.duration ? ` · ${formatDuration(part.duration)}` : ""}
                           </p>
                         </div>
                       </button>

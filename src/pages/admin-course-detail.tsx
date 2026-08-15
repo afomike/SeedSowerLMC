@@ -26,6 +26,7 @@ import { ArrowLeft, BookOpen, Clock, FileText, GripVertical, Headphones, Plus, T
 import { Link } from "wouter";
 import { getAuthToken } from "@/lib/api-client";
 import { QuizEditor } from "@/components/quiz-editor";
+import { durationToSeconds, durationToUnits, formatDuration } from "@/lib/duration";
 
 const courseUpdateSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -193,6 +194,67 @@ function FileUploadField({
           placeholder={`https://example.com/lesson.${contentType === "pdf" ? "pdf" : contentType === "audio" ? "mp3" : "mp4"}`}
         />
       )}
+    </div>
+  );
+}
+
+function LessonPartEditor({
+  part,
+  index,
+  onChange,
+  onRemove,
+}: {
+  part: LessonPart;
+  index: number;
+  onChange: (index: number, updates: Partial<LessonPart>) => void;
+  onRemove: (index: number) => void;
+}) {
+  const duration = durationToUnits(part.duration);
+  const updateDuration = (unit: keyof typeof duration, value: string) => {
+    onChange(index, {
+      duration: durationToSeconds({ ...duration, [unit]: Number(value) || 0 }),
+    });
+  };
+
+  return (
+    <div className="rounded-md border bg-background p-3 space-y-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center text-xs font-medium shrink-0">
+          {index + 1}
+        </div>
+        <Input value={part.title} onChange={(event) => onChange(index, { title: event.target.value })} placeholder="e.g. How to use paragraphs in HTML5" className="flex-1" />
+        <Button type="button" variant="ghost" size="icon" onClick={() => onRemove(index)} className="shrink-0 self-end sm:self-auto">
+          <Trash2 className="h-4 w-4 text-destructive" />
+        </Button>
+      </div>
+      <div className="space-y-2">
+        <Label>Content Type</Label>
+        <Select value={part.contentType} onValueChange={(value) => onChange(index, { contentType: value as ContentType })}>
+          <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="video"><span className="flex items-center gap-2"><Video className="h-4 w-4" /> Video</span></SelectItem>
+            <SelectItem value="audio"><span className="flex items-center gap-2"><Headphones className="h-4 w-4" /> Audio</span></SelectItem>
+            <SelectItem value="pdf"><span className="flex items-center gap-2"><FileText className="h-4 w-4" /> PDF</span></SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2">
+        <Label>Duration</Label>
+        <p className="text-xs text-muted-foreground">Enter any combination. It is stored automatically as seconds.</p>
+        <div className="grid grid-cols-3 gap-2">
+          {(["hours", "minutes", "seconds"] as const).map((unit) => (
+            <div key={unit} className="space-y-1">
+              <Label className="text-xs capitalize">{unit}</Label>
+              <Input type="number" min="0" step="1" value={duration[unit]} onChange={(event) => updateDuration(unit, event.target.value)} />
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label>Content File</Label>
+        <FileUploadField value={part.fileUrl} onChange={(fileUrl) => onChange(index, { fileUrl })} contentType={part.contentType} />
+      </div>
+      <Textarea value={part.description ?? ""} onChange={(event) => onChange(index, { description: event.target.value })} placeholder="Optional notes, learning points, or explanation" className="min-h-[72px]" />
     </div>
   );
 }
@@ -463,7 +525,7 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
                           )}
                           {lesson.duration && (
                             <span className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" /> {lesson.duration}m
+                              <Clock className="h-3 w-3" /> {formatDuration(lesson.duration)}
                             </span>
                           )}
                         </div>
@@ -551,75 +613,13 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
                   ) : (
                     <div className="space-y-3">
                       {lessonParts.map((part, index) => (
-                        <div key={index} className="rounded-md border bg-background p-3 space-y-2">
-                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                            <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center text-xs font-medium shrink-0">
-                              {index + 1}
-                            </div>
-                            <Input
-                              value={part.title}
-                              onChange={(event) => updateLessonPart(index, { title: event.target.value })}
-                              placeholder="e.g. How to use paragraphs in HTML5"
-                              className="flex-1"
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeLessonPart(index)}
-                              className="shrink-0 self-end sm:self-auto"
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <div className="space-y-2">
-                              <Label>Content Type</Label>
-                              <Select
-                                value={part.contentType}
-                                onValueChange={(value) => updateLessonPart(index, { contentType: value as ContentType })}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="video">
-                                    <span className="flex items-center gap-2"><Video className="h-4 w-4" /> Video</span>
-                                  </SelectItem>
-                                  <SelectItem value="audio">
-                                    <span className="flex items-center gap-2"><Headphones className="h-4 w-4" /> Audio</span>
-                                  </SelectItem>
-                                  <SelectItem value="pdf">
-                                    <span className="flex items-center gap-2"><FileText className="h-4 w-4" /> PDF</span>
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Duration (seconds)</Label>
-                              <Input
-                                type="number"
-                                placeholder="0"
-                                value={part.duration ?? 0}
-                                onChange={(event) => updateLessonPart(index, { duration: Number(event.target.value) || 0 })}
-                              />
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Content File</Label>
-                            <FileUploadField
-                              value={part.fileUrl}
-                              onChange={(fileUrl) => updateLessonPart(index, { fileUrl })}
-                              contentType={part.contentType}
-                            />
-                          </div>
-                          <Textarea
-                            value={part.description ?? ""}
-                            onChange={(event) => updateLessonPart(index, { description: event.target.value })}
-                            placeholder="Optional notes, learning points, or explanation"
-                            className="min-h-[72px]"
-                          />
-                        </div>
+                        <LessonPartEditor
+                          key={index}
+                          part={part}
+                          index={index}
+                          onChange={updateLessonPart}
+                          onRemove={removeLessonPart}
+                        />
                       ))}
                     </div>
                   )}
