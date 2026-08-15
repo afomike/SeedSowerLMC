@@ -132,51 +132,18 @@ function resolveDoc(url: string): MediaResolution {
 // can't reliably detect completion (cross-origin iframes don't expose
 // ended/progress events the way native <video>/<audio> tags do).
 function openOriginalLink(url: string) {
-  if (typeof window === "undefined") {
-    window.open(url, "_blank", "noopener,noreferrer");
-    return;
-  }
-
-  const shouldOpen = window.confirm("This will open the original resource in a new tab. Continue?");
-  if (shouldOpen) {
-    window.open(url, "_blank", "noopener,noreferrer");
-  }
+  window.open(url, "_blank", "noopener,noreferrer");
 }
 
-function ManualFinishControl({
-  label,
-  originalUrl,
-  onFinish,
-  finished,
-}: {
+function ManualFinishControl(_: {
   label: string;
   originalUrl: string;
   onFinish: () => void;
   finished: boolean;
 }) {
-  return (
-    <div className="flex items-center justify-between gap-3 px-4 py-3 bg-card border-t">
-      {!finished && (
-        <Button size="sm" variant="outline" onClick={onFinish} className="gap-2 border-border/70 bg-background/80 text-foreground hover:bg-muted">
-          <CheckCircle className="h-4 w-4" />
-          {label}
-        </Button>
-      )}
-      <a
-        href={originalUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(event) => {
-          event.preventDefault();
-          openOriginalLink(originalUrl);
-        }}
-        className="ml-auto inline-flex items-center gap-2 rounded-full border border-emerald-600/30 bg-emerald-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500 dark:hover:bg-emerald-600"
-      >
-        <ExternalLink className="h-4 w-4" />
-        Open original link
-      </a>
-    </div>
-  );
+  // Completion is tracked automatically; keep the component non-rendering so
+  // older embed branches cannot expose a manual completion control.
+  return null;
 }
 
 export default function LessonPlayer({ params }: { params: { id: string, lessonId: string } }) {
@@ -199,7 +166,7 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
   });
 
   // Quiz data for this lesson
-  const { data: quiz } = useQuery({
+  const { data: quiz, isPending: isQuizLoading } = useQuery({
     queryKey: ["lesson-quiz", lessonId],
     queryFn: () => fetchLessonQuiz(lessonId),
     enabled: !!lessonId,
@@ -213,6 +180,8 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
     staleTime: 30_000,
   });
 
+  // Wait for this check before auto-completing, so a required quiz can never
+  // be bypassed by a fast media-end event.
   const hasQuiz = quiz !== null && quiz !== undefined;
   const quizPassed = bestAttempt?.hasPassed === true;
 
@@ -226,6 +195,14 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
   // Find current lesson in course lessons to check status and get neighbors
   const courseLesson = course?.lessons?.find(l => l.id === lessonId);
   const isCompleted = courseLesson?.isCompleted || false;
+  const lessonParts = lesson?.parts && lesson.parts.length > 0
+    ? lesson.parts
+    : lesson ? [{
+        title: lesson.title,
+        contentType: lesson.contentType,
+        fileUrl: lesson.fileUrl,
+        duration: lesson.duration ?? null,
+      }] : [];
   
   // Find prev/next navigation
   const currentIndex = course?.lessons?.findIndex(l => l.id === lessonId) ?? -1;
@@ -274,8 +251,8 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
       const next = new Set(previous);
       next.add(partIndex);
 
-      const allPartsFinished = next.size >= (lesson?.parts?.length || 1);
-      if (allPartsFinished && !hasQuiz && !isCompleted) {
+      const allPartsFinished = next.size >= Math.max(lessonParts.length, 1);
+      if (allPartsFinished && !isQuizLoading && !hasQuiz && !isCompleted) {
         handleComplete();
       }
 
@@ -293,6 +270,30 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
   const handleVideoEnded = () => {
     handlePartFinished();
   };
+
+  // Iframes and PDFs cannot provide a reliable completion event. For these,
+  // only focused, visible time counts. Native audio/video use their real end
+  // event above.
+  useEffect(() => {
+    const activePart = lessonParts[activePartIndex];
+    if (!activePart || isCompleted || completedPartIndexes.has(activePartIndex) || isQuizLoading) return;
+
+    const isNativeMedia = activePart.contentType === "video"
+      ? resolveVideo(activePart.fileUrl).kind === "direct"
+      : activePart.contentType === "audio" && resolveAudio(activePart.fileUrl).kind === "direct";
+    if (isNativeMedia) return;
+
+    const duration = activePart.duration ?? lesson?.duration ?? 60;
+    const requiredSeconds = Math.max(1, Math.ceil(duration * 0.9));
+    let watchedSeconds = 0;
+    const timer = window.setInterval(() => {
+      if (document.visibilityState !== "visible" || !document.hasFocus()) return;
+      watchedSeconds += 1;
+      if (watchedSeconds >= requiredSeconds) handlePartFinished(activePartIndex);
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [activePartIndex, completedPartIndexes, isCompleted, isQuizLoading, lesson?.duration, lesson?.id, lesson?.parts]);
 
   if (isCourseLoading || isLessonLoading || !course || !lesson) {
     return (
@@ -314,14 +315,6 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
     return null; // Will redirect via useEffect
   }
 
-  const lessonParts = (lesson.parts?.length ?? 0) > 0
-    ? lesson.parts
-    : [{
-        title: lesson.title,
-        contentType: lesson.contentType,
-        fileUrl: lesson.fileUrl,
-        duration: lesson.duration ?? null,
-      }];
   const activePart = lessonParts[Math.min(activePartIndex, lessonParts.length - 1)]!;
   const allPartsFinished = completedPartIndexes.size >= lessonParts.length;
   const activePartFinished = completedPartIndexes.has(activePartIndex);
@@ -368,16 +361,9 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
               </span>
             </Button>
           ) : (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleComplete}
-              disabled={completeMutation.isPending}
-              className="gap-2 rounded-full border-primary/20 hover:bg-primary/5 hover:text-primary"
-            >
-              <CheckCircle className="h-4 w-4 opacity-50" />
-              <span className="hidden sm:inline">Mark Complete</span>
-            </Button>
+            <div className="text-xs text-muted-foreground" aria-live="polite">
+              {isQuizLoading ? "Checking lesson requirements…" : "Completion is tracked automatically"}
+            </div>
           )}
         </div>
       </header>
@@ -484,7 +470,7 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
                     className="flex-1 w-full"
                     title={activePart.title}
                   />
-                  {!activePartFinished && (
+                  {false && !activePartFinished && (
                     <div className="p-4 bg-card border-t flex items-center justify-between gap-3">
                       <a
                         href={activePart.fileUrl}
@@ -574,7 +560,7 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
                     </p>
                     <p className="text-xs text-amber-600 dark:text-amber-500 mt-0.5">
                       {quizPassed
-                        ? "Lesson will be marked complete once you click the button in the header."
+                        ? "Your lesson is being marked complete automatically."
                         : `Pass the quiz (${quiz?.passingScore ?? 70}% or above) to complete this lesson.`}
                     </p>
                   </div>
