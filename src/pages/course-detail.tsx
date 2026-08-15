@@ -30,6 +30,17 @@ export default function CourseDetail({ params }: { params: { id: string } }) {
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
   const submitAssignmentMutation = useSubmitCourseAssignment();
 
+  // Keep hooks unconditional. The course query resolves after the first render,
+  // so calling this only after the loading return changes the hook order and
+  // causes React to unmount the page with a blank screen.
+  const lessons = course?.lessons ?? [];
+  const completedLessons = lessons.filter((lesson) => lesson.isCompleted).length;
+  const lessonCount = course?.lessonCount ?? lessons.length;
+  const isFullyCompleted = lessonCount > 0 && completedLessons === lessonCount;
+  const { data: assignment, isLoading: isAssignmentLoading } = useGetCourseAssignment(courseId, {
+    query: { enabled: !!courseId && !!course && isFullyCompleted, queryKey: getCourseAssignmentQueryKey(courseId) },
+  });
+
   const handleEnroll = () => {
     enrollMutation.mutate({ id: courseId }, {
       onSuccess: () => {
@@ -92,15 +103,7 @@ export default function CourseDetail({ params }: { params: { id: string } }) {
     );
   }
 
-  const lessons = course.lessons ?? [];
-  const completedLessons = lessons.filter((lesson) => lesson.isCompleted).length;
-  const lessonCount = course.lessonCount ?? lessons.length;
   const progressPercent = lessonCount > 0 ? (completedLessons / lessonCount) * 100 : 0;
-  const isFullyCompleted = lessonCount > 0 && completedLessons === lessonCount;
-
-  const { data: assignment, isLoading: isAssignmentLoading } = useGetCourseAssignment(courseId, {
-    query: { enabled: !!courseId && isFullyCompleted, queryKey: getCourseAssignmentQueryKey(courseId) },
-  });
 
   const assignmentStatus = assignment?.status;
   const hasSubmittedAssignment = assignment?.hasSubmission === true;

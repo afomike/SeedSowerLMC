@@ -315,6 +315,21 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
     return null; // Will redirect via useEffect
   }
 
+  if (lessonParts.length === 0) {
+    return (
+      <div className="min-h-[100dvh] bg-background flex flex-col items-center justify-center p-6 text-center">
+        <FileText className="h-10 w-10 text-muted-foreground mb-4" />
+        <h1 className="text-xl font-semibold">This lesson has no content yet</h1>
+        <p className="text-muted-foreground mt-2 max-w-md">
+          Please return to the course and choose another lesson, or contact your course administrator.
+        </p>
+        <Link href={`/courses/${courseId}`} className="mt-6">
+          <Button>Back to course</Button>
+        </Link>
+      </div>
+    );
+  }
+
   const activePart = lessonParts[Math.min(activePartIndex, lessonParts.length - 1)]!;
   const allPartsFinished = completedPartIndexes.size >= lessonParts.length;
   const activePartFinished = completedPartIndexes.has(activePartIndex);
