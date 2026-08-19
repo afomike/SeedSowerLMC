@@ -2,9 +2,9 @@ import { useGetMyProgress, useGetStudentStats, useListCourses } from "@/lib/api-
 import { useQuery } from "@tanstack/react-query";
 import { StudentLayout } from "@/components/layout/student-layout";
 import { CourseCard } from "@/components/course-card";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, CheckCircle, Clock, MessageSquareText, Trophy } from "lucide-react";
+import { BookOpen, CheckCircle, Clock, MessageSquareText, PlaySquare, Trophy } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -213,6 +213,13 @@ export default function Dashboard() {
                     <CardTitle className="line-clamp-1">{course.courseTitle}</CardTitle>
                     <CardDescription>Completed on {course.lastActivityAt ? new Date(course.lastActivityAt).toLocaleDateString() : 'recently'}</CardDescription>
                   </CardHeader>
+                  <CardFooter className="p-4 pt-0">
+                    <Link href={`/courses/${course.courseId}`} className="w-full">
+                      <Button variant="outline" className="w-full gap-2">
+                        <PlaySquare className="h-4 w-4" /> Revisit Course
+                      </Button>
+                    </Link>
+                  </CardFooter>
                 </Card>
               ))}
             </div>
