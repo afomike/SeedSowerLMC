@@ -58,6 +58,12 @@ function hasExtension(url: string, exts: string[]): boolean {
   }
 }
 
+/** Returns an embeddable Google Drive preview URL for a shared file link. */
+function getGoogleDrivePreview(url: string): string | null {
+  const fileId = url.match(/drive\.google\.com\/(?:file\/d\/|open\?[^#]*\bid=|uc\?[^#]*\bid=)([\w-]+)/)?.[1];
+  return fileId ? `https://drive.google.com/file/d/${fileId}/preview` : null;
+}
+
 /** Returns a YouTube/Vimeo embed URL if the link matches, otherwise null. */
 function getVideoPlatformEmbed(url: string): string | null {
   const yt = url.match(
@@ -68,7 +74,7 @@ function getVideoPlatformEmbed(url: string): string | null {
   const vimeo = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
   if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
 
-  return null;
+  return getGoogleDrivePreview(url);
 }
 
 /** Returns a Spotify/SoundCloud embed URL if the link matches, otherwise null. */
@@ -80,8 +86,8 @@ function getAudioPlatformEmbed(url: string): string | null {
     return `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&auto_play=false&color=%23ff5500`;
   }
 
-  const drive = url.match(/drive\.google\.com\/file\/d\/([\w-]+)/);
-  if (drive) return `https://drive.google.com/file/d/${drive[1]}/preview`;
+  const drivePreview = getGoogleDrivePreview(url);
+  if (drivePreview) return drivePreview;
 
   const ytEmbed = getVideoPlatformEmbed(url);
   if (ytEmbed) return ytEmbed;
@@ -90,8 +96,8 @@ function getAudioPlatformEmbed(url: string): string | null {
 }
 /** Returns a preview/embed URL for common document-hosting links (Google Drive, Dropbox). */
 function getDocPlatformEmbed(url: string): string | null {
-  const drive = url.match(/drive\.google\.com\/file\/d\/([\w-]+)/);
-  if (drive) return `https://drive.google.com/file/d/${drive[1]}/preview`;
+  const drivePreview = getGoogleDrivePreview(url);
+  if (drivePreview) return drivePreview;
 
   if (/dropbox\.com\//.test(url)) {
     const raw = url.replace(/\?dl=0$/, "?raw=1").replace(/\?dl=1$/, "?raw=1");
