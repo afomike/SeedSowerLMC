@@ -146,7 +146,7 @@ export default function Certificate({ params }: { params: { courseId: string } }
                 <div className="w-48 border-b border-slate-400 mb-2 h-12 flex items-end justify-center pb-2">
                   <span className="font-serif italic text-2xl text-slate-700">Tofinishthetask</span>
                 </div>
-                <p className="text-sm font-medium tracking-wider text-slate-500 uppercase">Discipleship And Kingdom Advocacy Training</p>
+                <p className="text-sm font-medium tracking-wider text-slate-500 uppercase">The Seedsowers Ministry Kingdom Network</p>
               </div>
             </div>
           </div>
