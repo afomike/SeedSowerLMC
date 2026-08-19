@@ -45,6 +45,7 @@ export type Lesson = {
   description?: string;
   duration?: number | null;
   parts?: Array<Record<string, any>>;
+  completedPartIndexes?: number[];
   [key: string]: any;
 };
 
@@ -268,6 +269,15 @@ export function useCompleteLesson() {
       apiRequest(`/api/lessons/${id}/complete`, {
         method: "POST",
         body: JSON.stringify(data ?? {}),
+      }),
+  });
+}
+
+export function useCompleteLessonPart() {
+  return useMutation({
+    mutationFn: ({ id, partIndex }: { id: string; partIndex: number }) =>
+      apiRequest<{ completedPartIndexes: number[] }>(`/api/lessons/${id}/parts/${partIndex}/complete`, {
+        method: "POST",
       }),
   });
 }

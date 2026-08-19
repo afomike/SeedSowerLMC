@@ -68,7 +68,7 @@ export default function Certificate({ params }: { params: { courseId: string } }
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 print:hidden">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Certificate of Completion</h1>
-            <p className="text-muted-foreground mt-1">Well done — you have completed this training module. To God be the glory!</p>
+            <p className="text-muted-foreground mt-1">Well done! you have completed this training module. To God be the glory!</p>
           </div>
           <div className="flex gap-3">
             <Button variant="outline" onClick={handlePrint} className="gap-2 bg-card">

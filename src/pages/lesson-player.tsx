@@ -5,6 +5,7 @@ import {
   useGetCourse, 
   useGetLesson, 
   useCompleteLesson,
+  useCompleteLessonPart,
   getGetCourseQueryKey,
   getGetLessonQueryKey,
   getListLessonsQueryKey,
@@ -193,10 +194,10 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
   const quizPassed = bestAttempt?.hasPassed === true;
 
   const completeMutation = useCompleteLesson();
+  const completePartMutation = useCompleteLessonPart();
 
   useEffect(() => {
     setActivePartIndex(0);
-    setCompletedPartIndexes(new Set());
   }, [lessonId]);
 
   // Find current lesson in course lessons to check status and get neighbors
@@ -210,6 +211,16 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
         fileUrl: lesson.fileUrl,
         duration: lesson.duration ?? null,
       }] : [];
+
+  useEffect(() => {
+    if (!lesson) return;
+    const savedParts = lesson.completedPartIndexes ?? [];
+    setCompletedPartIndexes(
+      isCompleted
+        ? new Set(lessonParts.map((_, index) => index))
+        : new Set(savedParts),
+    );
+  }, [isCompleted, lesson, lessonParts.length]);
   
   // Find prev/next navigation
   const currentIndex = course?.lessons?.findIndex(l => l.id === lessonId) ?? -1;
@@ -254,6 +265,7 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
 };
   // Called when content finishes — if quiz exists show Take Quiz, else mark complete
   const handlePartFinished = (partIndex = activePartIndex) => {
+    completePartMutation.mutate({ id: lessonId, partIndex });
     setCompletedPartIndexes((previous) => {
       const next = new Set(previous);
       next.add(partIndex);
