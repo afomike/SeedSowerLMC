@@ -1,10 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { 
   useGetCourse, 
   useUpdateCourse, 
   useCreateLesson, 
   useUpdateLesson, 
   useDeleteLesson,
+  useReorderLessons,
   getGetCourseQueryKey
 } from "@/lib/api-client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -41,6 +42,7 @@ const lessonSchema = z.object({
 type UploadMode = "upload" | "url";
 type ContentType = "video" | "audio" | "pdf";
 type LessonPart = {
+  partId?: string;
   title: string;
   contentType: ContentType;
   fileUrl: string;
@@ -203,11 +205,13 @@ function LessonPartEditor({
   index,
   onChange,
   onRemove,
+  onInsertBefore,
 }: {
   part: LessonPart;
   index: number;
   onChange: (index: number, updates: Partial<LessonPart>) => void;
   onRemove: (index: number) => void;
+  onInsertBefore: (index: number) => void;
 }) {
   const duration = durationToUnits(part.duration);
   const updateDuration = (unit: keyof typeof duration, value: string) => {
@@ -223,6 +227,9 @@ function LessonPartEditor({
           {index + 1}
         </div>
         <Input value={part.title} onChange={(event) => onChange(index, { title: event.target.value })} placeholder="e.g. How to use paragraphs in HTML5" className="flex-1" />
+        <Button type="button" variant="ghost" size="icon" onClick={() => onInsertBefore(index)} className="shrink-0 self-end sm:self-auto" title="Insert part before this one">
+          <Plus className="h-4 w-4" />
+        </Button>
         <Button type="button" variant="ghost" size="icon" onClick={() => onRemove(index)} className="shrink-0 self-end sm:self-auto">
           <Trash2 className="h-4 w-4 text-destructive" />
         </Button>
@@ -267,6 +274,9 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
   const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
   const [lessonParts, setLessonParts] = useState<LessonPart[]>([]);
+  const [lessonInsertPosition, setLessonInsertPosition] = useState(1);
+  const [draggedLessonId, setDraggedLessonId] = useState<string | null>(null);
+  const [orderedLessons, setOrderedLessons] = useState<any[]>([]);
 
   const { data: course, isLoading } = useGetCourse(courseId, {
     query: { enabled: !!courseId, queryKey: getGetCourseQueryKey(courseId) }
@@ -276,6 +286,36 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
   const createLessonMutation = useCreateLesson();
   const updateLessonMutation = useUpdateLesson();
   const deleteLessonMutation = useDeleteLesson();
+  const reorderLessonsMutation = useReorderLessons();
+
+  const lessons = orderedLessons.length > 0 ? orderedLessons : (course?.lessons ?? []);
+
+  useEffect(() => {
+    if (course?.lessons) setOrderedLessons(course.lessons);
+  }, [course?.lessons]);
+
+  const handleLessonDrop = (targetLessonId: string) => {
+    if (!draggedLessonId || draggedLessonId === targetLessonId || lessons.length < 2) return;
+    const previousLessons = lessons;
+    const nextLessons = [...lessons];
+    const draggedIndex = nextLessons.findIndex((lesson) => lesson.id === draggedLessonId);
+    const targetIndex = nextLessons.findIndex((lesson) => lesson.id === targetLessonId);
+    if (draggedIndex < 0 || targetIndex < 0) return;
+    const [draggedLesson] = nextLessons.splice(draggedIndex, 1);
+    nextLessons.splice(targetIndex, 0, draggedLesson);
+    setOrderedLessons(nextLessons);
+    setDraggedLessonId(null);
+    reorderLessonsMutation.mutate(
+      { courseId, lessonIds: nextLessons.map((lesson) => lesson.id) },
+      {
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: getGetCourseQueryKey(courseId) }),
+        onError: () => {
+          setOrderedLessons(previousLessons);
+          toast({ variant: "destructive", title: "Could not reorder lessons", description: "Please try again." });
+        },
+      },
+    );
+  };
 
   const courseForm = useForm<z.infer<typeof courseUpdateSchema>>({
     resolver: zodResolver(courseUpdateSchema),
@@ -306,6 +346,7 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
     setEditingLessonId(null);
     lessonForm.reset({ title: "" });
     setLessonParts([{ title: "", contentType: "video", fileUrl: "", description: "", duration: 0 }]);
+    setLessonInsertPosition((course?.lessons?.length ?? 0) + 1);
     setIsLessonModalOpen(true);
   };
 
@@ -357,7 +398,7 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
         }
       });
     } else {
-      const nextOrder = (course?.lessons?.length || 0) + 1;
+      const nextOrder = Math.max(1, Math.min(lessonInsertPosition, (course?.lessons?.length || 0) + 1));
       createLessonMutation.mutate({ 
         courseId, 
         data: { ...data, parts, lessonOrder: nextOrder } 
@@ -400,6 +441,14 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
 
   const addLessonPart = () => {
     setLessonParts((parts) => [...parts, { title: "", contentType: "video", fileUrl: "", description: "", duration: 0 }]);
+  };
+
+  const insertLessonPartBefore = (index: number) => {
+    setLessonParts((parts) => [
+      ...parts.slice(0, index),
+      { title: "", contentType: "video", fileUrl: "", description: "", duration: 0 },
+      ...parts.slice(index),
+    ]);
   };
 
   const removeLessonPart = (index: number) => {
@@ -504,11 +553,19 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
             </div>
 
             <div className="space-y-3">
-              {course?.lessons?.map((lesson, index) => (
-                <div key={lesson.id} className="bg-card border rounded-lg p-3 shadow-sm">
+              {lessons.map((lesson, index) => (
+                <div
+                  key={lesson.id}
+                  draggable
+                  onDragStart={() => setDraggedLessonId(lesson.id)}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={() => handleLessonDrop(lesson.id)}
+                  onDragEnd={() => setDraggedLessonId(null)}
+                  className={`bg-card border rounded-lg p-3 shadow-sm ${draggedLessonId === lesson.id ? "opacity-50" : ""}`}
+                >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center group">
                     <div className="flex items-start gap-3 sm:items-center">
-                      <div className="mt-0.5 cursor-grab text-muted-foreground opacity-50 hover:opacity-100 shrink-0">
+                      <div className="mt-0.5 cursor-grab text-muted-foreground opacity-50 hover:opacity-100 shrink-0" title="Drag to reorder lesson">
                         <GripVertical className="h-5 w-5" />
                       </div>
                       <div className="h-8 w-8 bg-muted rounded-md flex items-center justify-center text-sm font-medium shrink-0">
@@ -542,7 +599,7 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
                   </div>
                   {(lesson.parts ?? []).length > 0 && (
                     <div className="mt-3 border-l-0 pl-0 sm:ml-14 sm:border-l sm:pl-4 space-y-2">
-                      {(lesson.parts ?? []).map((part, partIndex) => (
+                      {(lesson.parts ?? []).map((part: any, partIndex: number) => (
                         <div key={`${lesson.id}-${partIndex}`} className="text-sm">
                           <span className="font-medium text-foreground break-words">
                             {partIndex + 1}. {part.title}
@@ -560,7 +617,7 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
                 </div>
               ))}
 
-              {course?.lessons?.length === 0 && (
+              {lessons.length === 0 && (
                 <div className="text-center p-12 border border-dashed rounded-xl bg-muted/30">
                   <BookOpen className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-20" />
                   <p className="text-muted-foreground mb-4">No lessons have been added yet.</p>
@@ -592,6 +649,22 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
                     </FormItem>
                   )}
                 />
+
+                {!editingLessonId && (course?.lessons?.length ?? 0) > 0 && (
+                  <div className="space-y-2">
+                    <Label>Insert Lesson Position</Label>
+                    <Select value={String(lessonInsertPosition)} onValueChange={(value) => setLessonInsertPosition(Number(value))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: (course?.lessons?.length ?? 0) + 1 }, (_, index) => (
+                          <SelectItem key={index + 1} value={String(index + 1)}>
+                            {index + 1 === (course?.lessons?.length ?? 0) + 1 ? "At the end" : `Before Lesson ${index + 1}`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 
                 <div className="space-y-3 rounded-lg border p-3">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -619,6 +692,7 @@ export default function AdminCourseDetail({ params }: { params: { id: string } }
                           index={index}
                           onChange={updateLessonPart}
                           onRemove={removeLessonPart}
+                          onInsertBefore={insertLessonPartBefore}
                         />
                       ))}
                     </div>

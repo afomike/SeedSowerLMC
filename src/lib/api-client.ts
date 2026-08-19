@@ -45,6 +45,7 @@ export type Lesson = {
   description?: string;
   duration?: number | null;
   parts?: Array<Record<string, any>>;
+  completedPartIds?: string[];
   completedPartIndexes?: number[];
   [key: string]: any;
 };
@@ -275,8 +276,8 @@ export function useCompleteLesson() {
 
 export function useCompleteLessonPart() {
   return useMutation({
-    mutationFn: ({ id, partIndex }: { id: string; partIndex: number }) =>
-      apiRequest<{ completedPartIndexes: number[] }>(`/api/lessons/${id}/parts/${partIndex}/complete`, {
+    mutationFn: ({ id, partId }: { id: string; partId: string }) =>
+      apiRequest<{ completedPartIds: string[] }>(`/api/lessons/${id}/parts/${partId}/complete`, {
         method: "POST",
       }),
   });
@@ -311,6 +312,16 @@ export function useCreateLesson() {
       apiRequest<Lesson>(`/api/courses/${courseId}/lessons`, {
         method: "POST",
         body: JSON.stringify(data),
+      }),
+  });
+}
+
+export function useReorderLessons() {
+  return useMutation({
+    mutationFn: ({ courseId, lessonIds }: { courseId: string; lessonIds: string[] }) =>
+      apiRequest(`/api/courses/${courseId}/lessons/reorder`, {
+        method: "PATCH",
+        body: JSON.stringify({ lessonIds }),
       }),
   });
 }

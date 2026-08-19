@@ -163,7 +163,7 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
   const audioRef = useRef<HTMLAudioElement>(null);
   const [quizModalOpen, setQuizModalOpen] = useState(false);
   const [activePartIndex, setActivePartIndex] = useState(0);
-  const [completedPartIndexes, setCompletedPartIndexes] = useState<Set<number>>(new Set());
+  const [completedPartIds, setCompletedPartIds] = useState<Set<string>>(new Set());
 
   const { data: course, isLoading: isCourseLoading } = useGetCourse(courseId, {
     query: { enabled: !!courseId, queryKey: getGetCourseQueryKey(courseId) }
@@ -214,11 +214,11 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
 
   useEffect(() => {
     if (!lesson) return;
-    const savedParts = lesson.completedPartIndexes ?? [];
-    setCompletedPartIndexes(
+    const partIds = lessonParts.map((part, index) => part.partId ?? `legacy-${lesson.id}-${index}`);
+    setCompletedPartIds(
       isCompleted
-        ? new Set(lessonParts.map((_, index) => index))
-        : new Set(savedParts),
+        ? new Set(partIds)
+        : new Set(lesson.completedPartIds ?? []),
     );
   }, [isCompleted, lesson, lessonParts.length]);
   
@@ -265,10 +265,12 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
 };
   // Called when content finishes — if quiz exists show Take Quiz, else mark complete
   const handlePartFinished = (partIndex = activePartIndex) => {
-    completePartMutation.mutate({ id: lessonId, partIndex });
-    setCompletedPartIndexes((previous) => {
+    const part = lessonParts[partIndex];
+    const partId = part?.partId ?? `legacy-${lessonId}-${partIndex}`;
+    completePartMutation.mutate({ id: lessonId, partId });
+    setCompletedPartIds((previous) => {
       const next = new Set(previous);
-      next.add(partIndex);
+      next.add(partId);
 
       const allPartsFinished = next.size >= Math.max(lessonParts.length, 1);
       if (allPartsFinished && !isQuizLoading && !hasQuiz && !isCompleted) {
@@ -295,7 +297,7 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
   // event above.
   useEffect(() => {
     const activePart = lessonParts[activePartIndex];
-    if (!activePart || isCompleted || completedPartIndexes.has(activePartIndex) || isQuizLoading) return;
+    if (!activePart || isCompleted || completedPartIds.has(activePart.partId ?? `legacy-${lessonId}-${activePartIndex}`) || isQuizLoading) return;
 
     const isNativeMedia = activePart.contentType === "video"
       ? resolveVideo(activePart.fileUrl).kind === "direct"
@@ -312,7 +314,7 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
     }, 1000);
 
     return () => window.clearInterval(timer);
-  }, [activePartIndex, completedPartIndexes, isCompleted, isQuizLoading, lesson?.duration, lesson?.id, lesson?.parts]);
+  }, [activePartIndex, completedPartIds, isCompleted, isQuizLoading, lesson?.duration, lesson?.id, lesson?.parts]);
 
   if (isCourseLoading || isLessonLoading || !course || !lesson) {
     return (
@@ -350,8 +352,8 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
   }
 
   const activePart = lessonParts[Math.min(activePartIndex, lessonParts.length - 1)]!;
-  const allPartsFinished = completedPartIndexes.size >= lessonParts.length;
-  const activePartFinished = completedPartIndexes.has(activePartIndex);
+  const allPartsFinished = completedPartIds.size >= lessonParts.length;
+  const activePartFinished = completedPartIds.has(activePart.partId ?? `legacy-${lessonId}-${activePartIndex}`);
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
@@ -566,7 +568,7 @@ export default function LessonPlayer({ params }: { params: { id: string, lessonI
                         }`}
                       >
                         <div className="h-7 w-7 rounded-md bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold shrink-0">
-                          {completedPartIndexes.has(index) ? <CheckCircle className="h-4 w-4" /> : index + 1}
+                          {completedPartIds.has(part.partId ?? `legacy-${lessonId}-${index}`) ? <CheckCircle className="h-4 w-4" /> : index + 1}
                         </div>
                         <div>
                           <h3 className="text-sm font-medium text-foreground">{part.title}</h3>
