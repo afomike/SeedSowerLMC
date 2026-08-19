@@ -298,6 +298,13 @@ export default function CourseDetail({ params }: { params: { id: string } }) {
                           </Button>
                         </Link>
                       </div>
+                      {lessons[0] && (
+                        <Link href={`/courses/${courseId}/lessons/${lessons[0].id}`} className="block">
+                          <Button variant="outline" className="w-full gap-2 text-base h-12">
+                            <PlaySquare className="h-5 w-5" /> Revisit Course
+                          </Button>
+                        </Link>
+                      )}
                     </div>
                   ) : (
                     <Link href={`/courses/${courseId}/lessons/${lessons.find((lesson) => !lesson.isCompleted && !lesson.isLocked)?.id ?? lessons[0]?.id ?? courseId}`} className="block">
