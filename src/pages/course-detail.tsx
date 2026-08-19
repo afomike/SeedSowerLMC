@@ -292,19 +292,21 @@ export default function CourseDetail({ params }: { params: { id: string } }) {
                         >
                           {hasSubmittedAssignment ? "Resubmit Assignment" : "Submit Assignment"}
                         </Button>
-                        <Link href={`/certificates/${courseId}`} className="block">
-                          <Button disabled={!assignmentApproved} className="w-full gap-2 text-base h-12 shadow-md">
-                            <Trophy className="h-5 w-5" /> View Certificate
-                          </Button>
-                        </Link>
+                        <div className="space-y-3">
+                          <Link href={`/certificates/${courseId}`} className="block">
+                            <Button disabled={!assignmentApproved} className="w-full gap-2 text-base h-12 shadow-md">
+                              <Trophy className="h-5 w-5" /> View Certificate
+                            </Button>
+                          </Link>
+                          {lessons[0] && (
+                            <Link href={`/courses/${courseId}/lessons/${lessons[0].id}`} className="block">
+                              <Button variant="outline" className="w-full gap-2 text-base h-12">
+                                <PlaySquare className="h-5 w-5" /> Revisit Course
+                              </Button>
+                            </Link>
+                          )}
+                        </div>
                       </div>
-                      {lessons[0] && (
-                        <Link href={`/courses/${courseId}/lessons/${lessons[0].id}`} className="block">
-                          <Button variant="outline" className="w-full gap-2 text-base h-12">
-                            <PlaySquare className="h-5 w-5" /> Revisit Course
-                          </Button>
-                        </Link>
-                      )}
                     </div>
                   ) : (
                     <Link href={`/courses/${courseId}/lessons/${lessons.find((lesson) => !lesson.isCompleted && !lesson.isLocked)?.id ?? lessons[0]?.id ?? courseId}`} className="block">
